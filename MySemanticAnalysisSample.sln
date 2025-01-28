@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35514.174
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MySemanticAnalysisSample", "MySemanticAnalysisSample.csproj", "{E36B2F26-D76F-4CBE-8662-7756A3C95F14}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MySemanticAnalysisSample", "MySemanticAnalysisSample\MySemanticAnalysisSample.csproj", "{E36B2F26-D76F-4CBE-8662-7756A3C95F14}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject", "..\UnitTestProject\UnitTestProject.csproj", "{0C7DCDDF-39D4-41D3-B903-9193B658BC06}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject", "UnitTestProject\UnitTestProject.csproj", "{0C7DCDDF-39D4-41D3-B903-9193B658BC06}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
