@@ -8,6 +8,7 @@ namespace MySemanticAnalysisSample.FileHandling
     {
         private readonly string _filesPath;
 
+
         public FileReader(string filesPath)
         {
             _filesPath = filesPath;
@@ -17,7 +18,7 @@ namespace MySemanticAnalysisSample.FileHandling
         {
             var documents = new Dictionary<string, string>();
 
-            var documentFiles = Directory.GetFiles(_filesPath, "*.txt");
+            var documentFiles = Directory.EnumerateFiles(_filesPath, "*.txt");
 
             foreach (var file in documentFiles)
             {
@@ -26,6 +27,8 @@ namespace MySemanticAnalysisSample.FileHandling
                     string documentLabel = Path.GetFileNameWithoutExtension(file);
                     string documentContent = File.ReadAllText(file);
                     documents.Add(documentLabel, documentContent);
+                    Console.WriteLine("hello im reading file" + documentLabel);
+
                 }
                 catch (Exception ex)
                 {

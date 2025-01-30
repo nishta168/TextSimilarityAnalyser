@@ -17,7 +17,7 @@ namespace MySemanticAnalysisSample.Embedding
         /// </summary>
         public ChatGPTEmbeddingGenerator()
         {
-            string apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+            string apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY"); //move to appsettings.json later
 
             if (string.IsNullOrEmpty(apiKey))
             {

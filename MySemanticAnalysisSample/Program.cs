@@ -51,7 +51,8 @@ namespace MySemanticAnalysisSample
 
         //---------program to read data from file and calculate similarity---------------------------------------------
         static async Task Main(string[] args)
-        {
+        {   
+            //later move hardcoded path to settings
             string inputTextPath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\MySemanticAnalysisSample\Input\InputText\";
             string domainsPath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\MySemanticAnalysisSample\Input\Domains\";
 
