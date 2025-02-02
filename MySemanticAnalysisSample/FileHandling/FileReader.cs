@@ -27,7 +27,6 @@ namespace MySemanticAnalysisSample.FileHandling
                     string documentLabel = Path.GetFileNameWithoutExtension(file);
                     string documentContent = File.ReadAllText(file);
                     documents.Add(documentLabel, documentContent);
-                    Console.WriteLine("hello im reading file" + documentLabel);
 
                 }
                 catch (Exception ex)

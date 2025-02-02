@@ -53,8 +53,8 @@ namespace MySemanticAnalysisSample
         static async Task Main(string[] args)
         {   
             //later move hardcoded path to settings
-            string inputTextPath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\MySemanticAnalysisSample\Input\InputText\";
-            string domainsPath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\MySemanticAnalysisSample\Input\Domains\";
+            string inputTextPath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\Test\TextSimilarityAnalyser\MySemanticAnalysisSample\Input\InputText\";
+            string domainsPath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\Test\TextSimilarityAnalyser\MySemanticAnalysisSample\Input\Domains\";
 
             // Check if the directories exist
             if (!Directory.Exists(inputTextPath) || !Directory.Exists(domainsPath))
@@ -122,7 +122,7 @@ namespace MySemanticAnalysisSample
                     similarityDataTable.Add(similarityDataTableRow.ToArray());
                 }
 
-                string outputFilePath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\Tech_Tweakers\MySemanticAnalysisSample\Output\similarity_result.csv"; ;
+                string outputFilePath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\Test\TextSimilarityAnalyser\MySemanticAnalysisSample\Output\similarity_result.csv"; ;
                 CSVWriter.WriteToCSV(outputFilePath, similarityDataTable);
                 Console.WriteLine("Similarity data successfully written to file");
 
