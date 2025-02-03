@@ -24,7 +24,7 @@ namespace MySemanticAnalysisSample.Embedding
                 throw new InvalidOperationException("The OpenAI API key is not set in the environment variables.");
             }
 
-            _client = new EmbeddingClient("text-embedding-3-large", apiKey);
+            _client = new EmbeddingClient("text-embedding-ada-002", apiKey);
         }
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace MySemanticAnalysisSample.Embedding
         /// <returns>A float array representing the embedding of the input text.</returns>
         public async Task<float[]> CreateEmbedding(string text) //take chunking flag input also
         {
-            
+            //calculate the no. of tokens and if it exceeds the token limit do chunking
             // Call the API asynchronously
             OpenAIEmbedding embedding = await _client.GenerateEmbeddingAsync(text);
  

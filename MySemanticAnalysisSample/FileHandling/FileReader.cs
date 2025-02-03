@@ -1,6 +1,7 @@
-﻿
-
+﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace MySemanticAnalysisSample.FileHandling
 {
@@ -8,9 +9,18 @@ namespace MySemanticAnalysisSample.FileHandling
     {
         private readonly string _filesPath;
 
-
         public FileReader(string filesPath)
         {
+            if (string.IsNullOrWhiteSpace(filesPath))
+            {
+                throw new ArgumentException("The file path cannot be null or empty.", nameof(filesPath));
+            }
+
+            if (!Directory.Exists(filesPath) && !File.Exists(filesPath))  // Check if it's a valid directory or file
+            {
+                throw new DirectoryNotFoundException($"The specified path does not exist: {filesPath}");
+            }
+
             _filesPath = filesPath;
         }
 
@@ -18,24 +28,53 @@ namespace MySemanticAnalysisSample.FileHandling
         {
             var documents = new Dictionary<string, string>();
 
-            var documentFiles = Directory.EnumerateFiles(_filesPath, "*.txt");
-
-            foreach (var file in documentFiles)
+            try
             {
-                try
-                {
-                    string documentLabel = Path.GetFileNameWithoutExtension(file);
-                    string documentContent = File.ReadAllText(file);
-                    documents.Add(documentLabel, documentContent);
+                var documentFiles = Directory.GetFiles(_filesPath, "*.txt");
 
-                }
-                catch (Exception ex)
+                foreach (var file in documentFiles)
                 {
-                    Console.WriteLine($"Error reading file {file}: {ex.Message}");
+                    try
+                    {
+                        string documentLabel = Path.GetFileNameWithoutExtension(file);
+                        string documentContent = File.ReadAllText(file);
+                        documents.Add(documentLabel, documentContent);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error reading file {file}: {ex.Message}");
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error accessing directory {_filesPath}: {ex.Message}");
             }
 
             return documents;
+        }
+
+        public List<string> ReadWordsOrPhrases()
+        {
+            var words = new List<string>();
+
+            try
+            {
+                if (File.Exists(_filesPath))  // Ensure it's a valid file
+                {
+                    words = File.ReadLines(_filesPath).ToList();
+                }
+                else
+                {
+                    Console.WriteLine($"File not found: {_filesPath}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error reading file {_filesPath}: {ex.Message}");
+            }
+
+            return words;
         }
     }
 }
