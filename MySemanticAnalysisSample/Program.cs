@@ -1,5 +1,6 @@
 ﻿using MySemanticAnalysisSample.Embedding;
 using MySemanticAnalysisSample.FileHandling;
+using MySemanticAnalysisSample.Preprocessing;
 using MySemanticAnalysisSample.SimilarityCalculation;
 using System.Data;
 
@@ -52,9 +53,9 @@ namespace MySemanticAnalysisSample
         //---------program to read data from file and calculate similarity---------------------------------------------
         static async Task Main(string[] args)
         {
-            //var similarityDataTable = await CompareWordsWithWordsAsync();       
+            var similarityDataTable = await CompareWordsWithWordsAsync();
             //var similarityDataTable = await CompareDocsWithWordsAsync();
-            var similarityDataTable = await CompareDocsWithDocsAsync();
+            //var similarityDataTable = await CompareDocsWithDocsAsync();
 
 
 
@@ -82,12 +83,15 @@ namespace MySemanticAnalysisSample
             var referenceTexts = referenceTextReader.ReadWordsOrPhrases();
 
 
+
             try
             {
                 if (queryTexts.Count < 1 || referenceTexts.Count < 1)
                 {
                     throw new NullReferenceException("Minimum one query text and reference text required to compare");
                 }
+
+                var processor = new TextProcessor();
 
                 var referenceEmbeddingDictionary = new Dictionary<string, float[]>();
                 var embeddingGenerator = new ChatGPTEmbeddingGenerator();
@@ -96,11 +100,12 @@ namespace MySemanticAnalysisSample
                 similarityDataTableFirstRow.Add(" ");
 
                 foreach (var reference in referenceTexts)
-                {
+                {   
+                    var processedText = processor.ProcessWordOrPhrase(reference);
                     //check for duplicate domain keys
-                    var embedding = await embeddingGenerator.CreateEmbedding(reference);
-                    referenceEmbeddingDictionary.Add(reference, embedding);
-                    similarityDataTableFirstRow.Add(reference);
+                    var embedding = await embeddingGenerator.CreateEmbedding(processedText);
+                    referenceEmbeddingDictionary.Add(processedText, embedding);
+                    similarityDataTableFirstRow.Add(processedText);
                 }
                 similarityDataTable.Add(similarityDataTableFirstRow.ToArray());
 
@@ -108,10 +113,10 @@ namespace MySemanticAnalysisSample
 
                 foreach (var query in queryTexts)
                 {
-                    //preprocess
-                    var embedding = await embeddingGenerator.CreateEmbedding(query);
+                    var processedText = processor.ProcessWordOrPhrase(query);
+                    var embedding = await embeddingGenerator.CreateEmbedding(processedText);
                     var similarityDataTableRow = new List<string>();
-                    similarityDataTableRow.Add(query);
+                    similarityDataTableRow.Add(processedText);
 
                     foreach (var referenceEmbedding in referenceEmbeddingDictionary)
                     {
@@ -155,6 +160,9 @@ namespace MySemanticAnalysisSample
                     throw new NullReferenceException("Minimum one query doc and reference text is required to compare");
                 }
 
+                var processor = new TextProcessor();
+
+
                 var referenceEmbeddingDictionary = new Dictionary<string, float[]>();
                 var embeddingGenerator = new ChatGPTEmbeddingGenerator();
                 var similarityDataTable = new List<string[]>();
@@ -162,11 +170,12 @@ namespace MySemanticAnalysisSample
                 similarityDataTableFirstRow.Add(" ");
 
                 foreach (var reference in referenceTexts)
-                {
+                {   
+                    var processedText = processor.ProcessWordOrPhrase(reference);
                     //check for duplicate domain keys
-                    var embedding = await embeddingGenerator.CreateEmbedding(reference);
-                    referenceEmbeddingDictionary.Add(reference, embedding);
-                    similarityDataTableFirstRow.Add(reference);
+                    var embedding = await embeddingGenerator.CreateEmbedding(processedText);
+                    referenceEmbeddingDictionary.Add(processedText, embedding);
+                    similarityDataTableFirstRow.Add(processedText);
                 }
                 similarityDataTable.Add(similarityDataTableFirstRow.ToArray());
 
@@ -225,6 +234,8 @@ namespace MySemanticAnalysisSample
                 var similarityDataTable = new List<string[]>();
                 var similarityDataTableFirstRow = new List<string>();
                 similarityDataTableFirstRow.Add(" ");
+
+                var processor = new TextProcessor();
 
                 foreach (var reference in referenceDocs)
                 {

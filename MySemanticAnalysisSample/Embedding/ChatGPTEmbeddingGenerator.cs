@@ -32,10 +32,9 @@ namespace MySemanticAnalysisSample.Embedding
         /// </summary>
         /// <param name="text">The input text to generate the embedding for.</param>
         /// <returns>A float array representing the embedding of the input text.</returns>
-        public async Task<float[]> CreateEmbedding(string text) //take chunking flag input also
+        public async Task<float[]> CreateEmbedding(string text)
         {
             //calculate the no. of tokens and if it exceeds the token limit do chunking
-            // Call the API asynchronously
             OpenAIEmbedding embedding = await _client.GenerateEmbeddingAsync(text);
  
             // Convert embedding to float array

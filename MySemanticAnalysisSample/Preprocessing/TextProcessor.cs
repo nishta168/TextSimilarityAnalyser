@@ -6,7 +6,17 @@ using System.Threading.Tasks;
 
 namespace MySemanticAnalysisSample.Preprocessing
 {
-    internal class TextProcessor
+    internal class TextProcessor : ITextProcessor
     {
+        public string ProcessDocument(string document)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string ProcessWordOrPhrase(string wordOrPhrase)
+        {
+            var text = wordOrPhrase.Trim();
+            return text;
+        }
     }
 }

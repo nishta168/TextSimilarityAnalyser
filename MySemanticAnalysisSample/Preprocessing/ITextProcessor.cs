@@ -8,5 +8,7 @@ namespace MySemanticAnalysisSample.Preprocessing
 {
     internal interface ITextProcessor
     {
+        string ProcessWordOrPhrase(string wordOrPhrase );
+        string ProcessDocument(string document);
     }
 }
