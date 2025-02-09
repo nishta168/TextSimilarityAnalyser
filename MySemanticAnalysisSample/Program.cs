@@ -53,8 +53,8 @@ namespace MySemanticAnalysisSample
         //---------program to read data from file and calculate similarity---------------------------------------------
         static async Task Main(string[] args)
         {
-            var similarityDataTable = await CompareWordsWithWordsAsync();
-            //var similarityDataTable = await CompareDocsWithWordsAsync();
+            //var similarityDataTable = await CompareWordsWithWordsAsync();
+            var similarityDataTable = await CompareDocsWithWordsAsync();
             //var similarityDataTable = await CompareDocsWithDocsAsync();
 
 

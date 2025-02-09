@@ -24,7 +24,7 @@ namespace MySemanticAnalysisSample.Embedding
                 throw new InvalidOperationException("The OpenAI API key is not set in the environment variables.");
             }
 
-            _client = new EmbeddingClient("text-embedding-ada-002", apiKey);
+            _client = new EmbeddingClient("text-embedding-3-large", apiKey);
         }
 
         /// <summary>

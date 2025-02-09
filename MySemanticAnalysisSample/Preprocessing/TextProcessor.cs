@@ -8,7 +8,7 @@ namespace MySemanticAnalysisSample.Preprocessing
 {
     internal class TextProcessor : ITextProcessor
     {
-        public string ProcessDocument(string document)
+        public List<string> ProcessDocument(string document)
         {
             throw new NotImplementedException();
         }
