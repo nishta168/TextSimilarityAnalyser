@@ -183,14 +183,22 @@ namespace MySemanticAnalysisSample
 
                 foreach (var query in queryDocs)
                 {
-                    var embedding = await embeddingGenerator.CreateEmbedding(query.Value);
                     var similarityDataTableRow = new List<string>();
                     similarityDataTableRow.Add(query.Key);
-
+                    var processedDocumentChunks = processor.ProcessDocument(query.Value);
+                                      
                     foreach (var referenceEmbedding in referenceEmbeddingDictionary)
-                    {
-                        var similarity = similarityCalculator.CalculateSimilarity(embedding, referenceEmbedding.Value);
-                        similarityDataTableRow.Add(similarity.ToString());
+                    {   
+                        var similarities = new List<float>();
+                        foreach (var chunk in processedDocumentChunks)
+                        {
+                            var embedding = await embeddingGenerator.CreateEmbedding(chunk);
+                            var similarity = similarityCalculator.CalculateSimilarity(embedding, referenceEmbedding.Value);
+                            similarities.Add(similarity);
+                        }
+                        var averageSimilarity = similarities.Average();
+
+                        similarityDataTableRow.Add(averageSimilarity.ToString());
                     }
 
                     similarityDataTable.Add(similarityDataTableRow.ToArray());
