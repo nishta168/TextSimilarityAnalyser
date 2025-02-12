@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace MySemanticAnalysisSample.FileHandling
 {
@@ -38,6 +39,10 @@ namespace MySemanticAnalysisSample.FileHandling
                     {
                         string documentLabel = Path.GetFileNameWithoutExtension(file);
                         string documentContent = File.ReadAllText(file);
+                        if (string.IsNullOrWhiteSpace(documentContent))
+                        {
+                            throw new InvalidOperationException("The file is empty or contains only whitespace.");
+                        }
                         documents.Add(documentLabel, documentContent);
                     }
                     catch (Exception ex)
