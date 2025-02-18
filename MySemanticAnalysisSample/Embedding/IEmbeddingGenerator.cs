@@ -3,6 +3,9 @@ namespace MySemanticAnalysisSample.Embedding
 {
     internal interface IEmbeddingGenerator
     {
-        Task<float[]> CreateEmbedding(string text);
+        Task<float[]> EmbedText(string text);
+        Task<Dictionary<string, float[]>> EmbedDocumentsList(Dictionary<string, string> documents);
+        Task<Dictionary<string, float[]>> EmbedWordsList(List<string> words);
+
     }
 }

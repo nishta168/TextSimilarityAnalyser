@@ -103,7 +103,7 @@ namespace MySemanticAnalysisSample
                 {   
                     var processedText = processor.ProcessWordOrPhrase(reference);
                     //check for duplicate domain keys
-                    var embedding = await embeddingGenerator.CreateEmbedding(processedText);
+                    var embedding = await embeddingGenerator.EmbedText(processedText);
                     referenceEmbeddingDictionary.Add(processedText, embedding);
                     similarityDataTableFirstRow.Add(processedText);
                 }
@@ -114,7 +114,7 @@ namespace MySemanticAnalysisSample
                 foreach (var query in queryTexts)
                 {
                     var processedText = processor.ProcessWordOrPhrase(query);
-                    var embedding = await embeddingGenerator.CreateEmbedding(processedText);
+                    var embedding = await embeddingGenerator.EmbedText(processedText);
                     var similarityDataTableRow = new List<string>();
                     similarityDataTableRow.Add(processedText);
 
@@ -173,7 +173,7 @@ namespace MySemanticAnalysisSample
                 {   
                     var processedText = processor.ProcessWordOrPhrase(reference);
                     //check for duplicate domain keys
-                    var embedding = await embeddingGenerator.CreateEmbedding(processedText);
+                    var embedding = await embeddingGenerator.EmbedText(processedText);
                     referenceEmbeddingDictionary.Add(processedText, embedding);
                     similarityDataTableFirstRow.Add(processedText);
                 }
@@ -192,7 +192,7 @@ namespace MySemanticAnalysisSample
                         var similarities = new List<float>();
                         foreach (var chunk in processedDocumentChunks)
                         {
-                            var embedding = await embeddingGenerator.CreateEmbedding(chunk);
+                            var embedding = await embeddingGenerator.EmbedText(chunk);
                             var similarity = similarityCalculator.CalculateSimilarity(embedding, referenceEmbedding.Value);
                             similarities.Add(similarity);
                         }
@@ -248,7 +248,7 @@ namespace MySemanticAnalysisSample
                 foreach (var reference in referenceDocs)
                 {
                     //check for duplicate domain keys
-                    var embedding = await embeddingGenerator.CreateEmbedding(reference.Value);
+                    var embedding = await embeddingGenerator.EmbedText(reference.Value);
                     referenceEmbeddingDictionary.Add(reference.Key, embedding);
                     similarityDataTableFirstRow.Add(reference.Key);
                 }
@@ -258,7 +258,7 @@ namespace MySemanticAnalysisSample
 
                 foreach (var query in queryDocs)
                 {
-                    var embedding = await embeddingGenerator.CreateEmbedding(query.Value);
+                    var embedding = await embeddingGenerator.EmbedText(query.Value);
                     var similarityDataTableRow = new List<string>();
                     similarityDataTableRow.Add(query.Key);
 

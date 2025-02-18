@@ -27,18 +27,24 @@ namespace MySemanticAnalysisSample.Embedding
             _client = new EmbeddingClient("text-embedding-3-large", apiKey);
         }
 
-        /// <summary>
-        /// Generates an embedding for the provided text using the OpenAI API.
-        /// </summary>
-        /// <param name="text">The input text to generate the embedding for.</param>
-        /// <returns>A float array representing the embedding of the input text.</returns>
-        public async Task<float[]> CreateEmbedding(string text)
+        public Task<Dictionary<string, float[]>> EmbedDocumentsList(Dictionary<string, string> documents)
+        {
+            throw new NotImplementedException();
+        }
+
+        
+        public async Task<float[]> EmbedText(string text)
         {
             //calculate the no. of tokens and if it exceeds the token limit do chunking
             OpenAIEmbedding embedding = await _client.GenerateEmbeddingAsync(text);
  
             // Convert embedding to float array
             return embedding.ToFloats().ToArray();
+        }
+
+        public Task<Dictionary<string, float[]>> EmbedWordsList(List<string> words)
+        {
+            throw new NotImplementedException();
         }
     }
 }
