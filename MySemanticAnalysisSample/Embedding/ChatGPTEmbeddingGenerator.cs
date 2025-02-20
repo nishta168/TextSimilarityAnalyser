@@ -1,5 +1,6 @@
 ﻿using OpenAI.Embeddings;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -8,7 +9,7 @@ namespace MySemanticAnalysisSample.Embedding
     /// <summary>
     /// Implementation of IEmbeddingGenerator using OpenAI's Embedding API.
     /// </summary>
-    internal class ChatGPTEmbeddingGenerator : IEmbeddingGenerator
+    internal class ChatGPTEmbeddingGenerator
     {
         private readonly EmbeddingClient _client;
 
@@ -17,7 +18,7 @@ namespace MySemanticAnalysisSample.Embedding
         /// </summary>
         public ChatGPTEmbeddingGenerator()
         {
-            string apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY"); //move to appsettings.json later
+            string apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY"); // Move to appsettings.json later
 
             if (string.IsNullOrEmpty(apiKey))
             {
@@ -27,24 +28,96 @@ namespace MySemanticAnalysisSample.Embedding
             _client = new EmbeddingClient("text-embedding-3-large", apiKey);
         }
 
-        public Task<Dictionary<string, float[]>> EmbedDocumentsList(Dictionary<string, string> documents)
+        /// <summary>
+        /// Generates embeddings for a batch of documents.
+        /// </summary>
+        /// <param name="documents">Dictionary where keys are document names and values are document content.</param>
+        /// <returns>A dictionary mapping document names to their embedding vectors.</returns>
+        public async Task<Dictionary<string, float[]>> EmbedDocumentsListAsync(Dictionary<string, string> documents)
         {
-            throw new NotImplementedException();
+            var embeddingsDictionary = new Dictionary<string, float[]>();
+
+            try
+            {
+                var documentKeys = documents.Keys.ToList();
+                var documentTexts = documents.Values.ToList();
+
+                // Perform batch embedding request
+                OpenAIEmbeddingCollection embeddingResults = await _client.GenerateEmbeddingsAsync(documentTexts);
+
+
+                if (embeddingResults != null && embeddingResults.Count == documents.Count)
+                {
+                    for (int i = 0; i < documentKeys.Count; i++)
+                    {
+                        embeddingsDictionary[documentKeys[i]] = embeddingResults[i].ToFloats().ToArray();
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Error: Embedding response does not match input size.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error generating embeddings: {ex.Message}");
+            }
+
+            return embeddingsDictionary;
         }
 
-        
-        public async Task<float[]> EmbedText(string text)
+        /// <summary>
+        /// Generates an embedding for a single text input.
+        /// </summary>
+        /// <param name = "text" > The text to embed.</param>
+        /// <returns>Embedding vector as a float array.</returns>
+        public async Task<float[]> EmbedTextAsync(string text)
         {
-            //calculate the no. of tokens and if it exceeds the token limit do chunking
-            OpenAIEmbedding embedding = await _client.GenerateEmbeddingAsync(text);
- 
-            // Convert embedding to float array
-            return embedding.ToFloats().ToArray();
+            try
+            {
+                OpenAIEmbedding embedding = await _client.GenerateEmbeddingAsync(text);
+                return embedding.ToFloats().ToArray();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error generating embedding for text: {ex.Message}");
+                return Array.Empty<float>(); // Return an empty array in case of error
+            }
         }
 
-        public Task<Dictionary<string, float[]>> EmbedWordsList(List<string> words)
+        /// <summary>
+        /// Generates embeddings for a list of words.
+        /// </summary>
+        /// <param name="words">List of words to embed.</param>
+        /// <returns>A dictionary mapping words to their embedding vectors.</returns>
+        public async Task<Dictionary<string, float[]>> EmbedWordsListAsync(List<string> words)
         {
-            throw new NotImplementedException();
+            var embeddingsDictionary = new Dictionary<string, float[]>();
+
+            try
+            {
+                var wordsArray = words.ToArray();
+                OpenAIEmbeddingCollection embeddingResults = await _client.GenerateEmbeddingsAsync(wordsArray);
+
+
+                if (embeddingResults != null && embeddingResults.Count == words.Count)
+                {
+                    for (int i = 0; i < words.Count; i++)
+                    {
+                        embeddingsDictionary[words[i]] = embeddingResults[i].ToFloats().ToArray();
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Error: Embedding response does not match input size.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error generating embeddings: {ex.Message}");
+            }
+
+            return embeddingsDictionary;
         }
     }
 }
