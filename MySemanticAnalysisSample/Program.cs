@@ -53,8 +53,8 @@ namespace MySemanticAnalysisSample
         //---------program to read data from file and calculate similarity---------------------------------------------
         static async Task Main(string[] args)
         {
-            var similarityDataTable = await CompareWordsWithWordsAsync();
-            //var similarityDataTable = await CompareDocsWithWordsAsync();
+            //var similarityDataTable = await CompareWordsWithWordsAsync();
+            var similarityDataTable = await CompareDocsWithWordsAsync();
             //var similarityDataTable = await CompareDocsWithDocsAsync();
 
 
@@ -97,7 +97,7 @@ namespace MySemanticAnalysisSample
                 var processedQueryText = processor.ProcessWordOrPhraseList(queryTexts);
                 var processedReferenceText = processor.ProcessWordOrPhraseList(referenceTexts);
 
-                var queryEmbeddingsDictionary = await embeddingGenerator.EmbedWordsListAsync(processedQueryText);
+                var queryEmbeddingDictionary = await embeddingGenerator.EmbedWordsListAsync(processedQueryText);
                 var referenceEmbeddingDictionary = await embeddingGenerator.EmbedWordsListAsync(processedReferenceText);
 
                 
@@ -114,7 +114,7 @@ namespace MySemanticAnalysisSample
 
                 var similarityCalculator = new CosineSimilarityCalculator();
 
-                foreach (var query in queryEmbeddingsDictionary)
+                foreach (var query in queryEmbeddingDictionary)
                 {
 
                     var similarityDataTableRow = new List<string>();
@@ -142,82 +142,75 @@ namespace MySemanticAnalysisSample
 
         }
 
-        //static async Task<List<string[]>> CompareDocsWithWordsAsync()
-        //{
-        //    //later move path to configuration
-        //    string queryDocsPath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\Test\TextSimilarityAnalyser\MySemanticAnalysisSample\Input\QueryText\Documents";
-        //    string referenceTextPath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\Test\TextSimilarityAnalyser\MySemanticAnalysisSample\Input\ReferenceText\WordsOrPhrases.txt";
+        static async Task<List<string[]>> CompareDocsWithWordsAsync()
+        {
+            //later move path to configuration
+            string queryDocsPath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\Test\TextSimilarityAnalyser\MySemanticAnalysisSample\Input\QueryText\Documents";
+            string referenceTextPath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\Test\TextSimilarityAnalyser\MySemanticAnalysisSample\Input\ReferenceText\WordsOrPhrases.txt";
 
-        //    var queryDocsReader = new FileReader(queryDocsPath);
-        //    var queryDocs = queryDocsReader.ReadDocuments();
+            var queryDocsReader = new FileReader(queryDocsPath);
+            var queryDocs = queryDocsReader.ReadDocuments();
 
-        //    var referenceTextReader = new FileReader(referenceTextPath);
-        //    var referenceTexts = referenceTextReader.ReadWordsOrPhrases();
-
-
-        //    try
-        //    {
-        //        if (queryDocs.Count < 1 || referenceTexts.Count < 1)
-        //        {
-        //            throw new NullReferenceException("Minimum one query doc and reference text is required to compare");
-        //        }
-
-        //        var processor = new TextProcessor();
+            var referenceTextReader = new FileReader(referenceTextPath);
+            var referenceTexts = referenceTextReader.ReadWordsOrPhrases();
 
 
-        //        var referenceEmbeddingDictionary = new Dictionary<string, float[]>();
-        //        var embeddingGenerator = new ChatGPTEmbeddingGenerator();
-        //        var similarityDataTable = new List<string[]>();
-        //        var similarityDataTableFirstRow = new List<string>();
-        //        similarityDataTableFirstRow.Add(" ");
+            try
+            {
+                if (queryDocs.Count < 1 || referenceTexts.Count < 1)
+                {
+                    throw new NullReferenceException("Minimum one query doc and reference text is required to compare");
+                }
 
-        //        foreach (var reference in referenceTexts)
-        //        {   
-        //            var processedText = processor.ProcessWordOrPhrase(reference);
-        //            //check for duplicate domain keys
-        //            var embedding = await embeddingGenerator.EmbedTextAsync(processedText);
-        //            referenceEmbeddingDictionary.Add(processedText, embedding);
-        //            similarityDataTableFirstRow.Add(processedText);
-        //        }
-        //        similarityDataTable.Add(similarityDataTableFirstRow.ToArray());
+                var processor = new TextProcessor();
+                var embeddingGenerator = new ChatGPTEmbeddingGenerator();
 
-        //        var similarityCalculator = new CosineSimilarityCalculator();
+                var processedQueryDocs = processor.ProcessDocumentList(queryDocs);
+                var processedReferenceText = processor.ProcessWordOrPhraseList(referenceTexts);
 
-        //        foreach (var query in queryDocs)
-        //        {
-        //            var similarityDataTableRow = new List<string>();
-        //            similarityDataTableRow.Add(query.Key);
-        //            var processedDocumentChunks = processor.ProcessDocument(query.Value);
-                                      
-        //            foreach (var referenceEmbedding in referenceEmbeddingDictionary)
-        //            {   
-        //                var similarities = new List<float>();
-        //                foreach (var chunk in processedDocumentChunks)
-        //                {
-        //                    var embedding = await embeddingGenerator.EmbedTextAsync(chunk);
-        //                    var similarity = similarityCalculator.CalculateSimilarity(embedding, referenceEmbedding.Value);
-        //                    similarities.Add(similarity);
-        //                }
-        //                var averageSimilarity = similarities.Average();
+                var queryEmbeddingDictionary = await embeddingGenerator.EmbedDocumentsListAsync(processedQueryDocs);
+                var referenceEmbeddingDictionary = await embeddingGenerator.EmbedWordsListAsync(processedReferenceText);
+                
+                var similarityDataTable = new List<string[]>();
+                var similarityDataTableFirstRow = new List<string>();
+                similarityDataTableFirstRow.Add("    ");
 
-        //                similarityDataTableRow.Add(averageSimilarity.ToString());
-        //            }
+                foreach (var reference in referenceEmbeddingDictionary)
+                {
+                    similarityDataTableFirstRow.Add(reference.Key);
+                }
 
-        //            similarityDataTable.Add(similarityDataTableRow.ToArray());
-        //        }
+                similarityDataTable.Add(similarityDataTableFirstRow.ToArray());
 
-        //        return similarityDataTable;
+                var similarityCalculator = new CosineSimilarityCalculator();
 
+                foreach (var query in queryEmbeddingDictionary)
+                {
+                    var similarityDataTableRow = new List<string>();
+                    similarityDataTableRow.Add(query.Key);
+                   
+                    foreach (var reference in referenceEmbeddingDictionary)
+                    {
+                        var similarity = similarityCalculator.CalculateSimilarity(query.Value, reference.Value);
+                        similarityDataTableRow.Add(similarity.ToString());
+                    }
 
-        //    }
-        //    catch (Exception)
-        //    {
+                    similarityDataTable.Add(similarityDataTableRow.ToArray());
+                    
+                }
 
-        //        throw;
-        //    }
+                return similarityDataTable;
 
 
-        //}
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
+
+        }
 
         //static async Task<List<string[]>> CompareDocsWithDocsAsync()
         //{
