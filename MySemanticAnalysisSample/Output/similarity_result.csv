@@ -1,7 +1,7 @@
- ,Football,Global Warming
-Football (only about football),0.4405291,0.1286399
-Global warming(0 mention of football),0.09236055,0.54025877
-Global warming(1 whole para about football),0.3375703,0.51498437
-Leisure activities(0 mentions of football),0.185862,0.099243745
-Sports(0 mention of football),0.31247002,0.13973661
-Sports(2 mention of football),0.31332618,0.13860528
+    ,Football,Global Warming
+Football (only about football),0.45870614,0.13638161
+Global warming(0 mention of football),0.09427714,0.56752646
+Global warming(1 whole para about football),0.29478803,0.5343231
+Leisure activities(0 mentions of football),0.17210521,0.08639146
+Sports(0 mention of football),0.3112047,0.14170207
+Sports(2 mention of football),0.31136897,0.14154401
