@@ -45,9 +45,9 @@ namespace MySemanticAnalysisSample.Preprocessing
             text = Regex.Replace(text, @"\S+@\S+\.\S+", "", RegexOptions.IgnoreCase);
 
             // Remove special characters (keeping basic punctuation)
-            text = Regex.Replace(text, @"[^a-zA-Z0-9\s.,!?]", "", RegexOptions.IgnoreCase);
+            //text = Regex.Replace(text, @"[^a-zA-Z0-9\s.,!?]", "", RegexOptions.IgnoreCase);
 
-            // Remove extra spaces
+            //Remove extra spaces
             text = Regex.Replace(text, @"\s+", " ").Trim();
 
             return text;
