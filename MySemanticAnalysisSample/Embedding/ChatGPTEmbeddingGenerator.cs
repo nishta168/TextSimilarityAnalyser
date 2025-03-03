@@ -9,7 +9,7 @@ namespace MySemanticAnalysisSample.Embedding
     /// <summary>
     /// Implementation of IEmbeddingGenerator using OpenAI's Embedding API.
     /// </summary>
-    internal class ChatGPTEmbeddingGenerator
+    internal class ChatGPTEmbeddingGenerator: IEmbeddingGenerator
     {
         private readonly EmbeddingClient _client;
 
@@ -33,30 +33,26 @@ namespace MySemanticAnalysisSample.Embedding
         /// </summary>
         /// <param name="documents">Dictionary where keys are document names and values are document content.</param>
         /// <returns>A dictionary mapping document names to their embedding vectors.</returns>
-        public async Task<Dictionary<string, float[]>> EmbedDocumentsListAsync(Dictionary<string, string> documents)
+        public async Task<Dictionary<string, List<float[]>>> EmbedDocumentsListAsync(Dictionary<string, List<string>> documents)
         {
-            var embeddingsDictionary = new Dictionary<string, float[]>();
+            var embeddingsDictionary = new Dictionary<string, List<float[]>>();
 
             try
             {
-                var documentKeys = documents.Keys.ToList();
-                var documentTexts = documents.Values.ToList();
-
-                // Perform batch embedding request
-                OpenAIEmbeddingCollection embeddingResults = await _client.GenerateEmbeddingsAsync(documentTexts);
-
-
-                if (embeddingResults != null && embeddingResults.Count == documents.Count)
+                foreach ( var document in documents)
                 {
-                    for (int i = 0; i < documentKeys.Count; i++)
+                    var chunks = document.Value.ToList();
+                    var chunkEmbeddings = new List<float[]>();
+                    OpenAIEmbeddingCollection embeddingResults = await _client.GenerateEmbeddingsAsync(chunks);
+                    if(embeddingResults != null)
                     {
-                        embeddingsDictionary[documentKeys[i]] = embeddingResults[i].ToFloats().ToArray();
+                        for( int i = 0; i < embeddingResults.Count; i++)
+                        {
+                            chunkEmbeddings.Add(embeddingResults[i].ToFloats().ToArray());
+                        }
+                        embeddingsDictionary.Add(document.Key, chunkEmbeddings);
                     }
-                }
-                else
-                {
-                    Console.WriteLine("Error: Embedding response does not match input size.");
-                }
+                }                              
             }
             catch (Exception ex)
             {

@@ -9,6 +9,6 @@ namespace MySemanticAnalysisSample.Preprocessing
     internal interface ITextProcessor
     {
         List<string> ProcessWordOrPhraseList(List<string> wordOrPhraseList );
-        Dictionary<string, string> ProcessDocumentList(Dictionary<string, string> documentList);
+        Dictionary<string, List<string>> ProcessDocumentList(Dictionary<string, string> documentList);
     }
 }

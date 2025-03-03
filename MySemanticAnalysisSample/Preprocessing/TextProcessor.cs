@@ -9,15 +9,15 @@ namespace MySemanticAnalysisSample.Preprocessing
 {
     internal class TextProcessor : ITextProcessor
     {
-        public Dictionary<string, string> ProcessDocumentList(Dictionary<string, string> documentList)
+        public Dictionary<string, List<string>> ProcessDocumentList(Dictionary<string, string> documentList)
         {
-            //var maximumWordCount = 500;
-            var ProcessedDocumetList = new Dictionary<string, string>();
+            var maximumWordCount = 300;
+            var ProcessedDocumetList = new Dictionary<string, List<string>>();
             foreach (var document in documentList)
-            {
+            {   
                 var cleanedDocument = CleanDocument(document.Value);
-                //var documentChunks = ChunkDocument(document, maximumWordCount);
-                ProcessedDocumetList.Add(document.Key, cleanedDocument);
+                var documentChunks = ChunkDocument(cleanedDocument, maximumWordCount);
+                ProcessedDocumetList.Add(document.Key, documentChunks);
             }
             return ProcessedDocumetList;
         }
