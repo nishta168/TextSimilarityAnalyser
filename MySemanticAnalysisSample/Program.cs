@@ -127,7 +127,7 @@ namespace MySemanticAnalysisSample
                 var processedQueryDocs = processor.ProcessDocumentList(queryDocs);
                 var processedReferenceText = processor.ProcessWordOrPhraseList(referenceTexts);
 
-                var queryEmbeddingDictionary = await embeddingGenerator.EmbedDocumentsListAsync(queryDocs);
+                var queryEmbeddingDictionary = await embeddingGenerator.EmbedDocumentsListAsync(processedQueryDocs);
                 var referenceEmbeddingDictionary = await embeddingGenerator.EmbedWordsListAsync(processedReferenceText);
                 
                 var similarityDataTable = new List<string[]>();
@@ -142,20 +142,36 @@ namespace MySemanticAnalysisSample
                 similarityDataTable.Add(similarityDataTableFirstRow.ToArray());
 
                 var similarityCalculator = new CosineSimilarityCalculator();
+                const float beta = 50.0f; // Adjust beta to control weighting (higher → stronger bias toward large values)
+
 
                 foreach (var query in queryEmbeddingDictionary)
                 {
                     var similarityDataTableRow = new List<string>();
                     similarityDataTableRow.Add(query.Key);
-                   
+
                     foreach (var reference in referenceEmbeddingDictionary)
                     {
-                        var similarity = similarityCalculator.CalculateSimilarity(query.Value, reference.Value);
-                        similarityDataTableRow.Add(similarity.ToString());
+                        var similarities = new List<float>();
+                        foreach (var embedding in query.Value)
+                        {
+                            var sim = similarityCalculator.CalculateSimilarity(embedding, reference.Value);
+                            similarities.Add(sim);
+                        }
+
+                        //Exponential Weighted Mean Calculation
+                        var expWeights = similarities.Select(x => (float)Math.Exp(beta * x)).ToList();
+                        float weightedSum = similarities.Zip(expWeights, (sim, weight) => sim * weight).Sum();
+                        float weightSum = expWeights.Sum();
+                        float weightedSimilarity = weightSum != 0 ? weightedSum / weightSum : 0; // Avoid division by zero
+
+
+                        similarityDataTableRow.Add(weightedSimilarity.ToString());
                     }
 
+
                     similarityDataTable.Add(similarityDataTableRow.ToArray());
-                    
+
                 }
 
                 return similarityDataTable;
@@ -171,75 +187,79 @@ namespace MySemanticAnalysisSample
 
         }
 
-        static async Task<List<string[]>> CompareDocsWithDocsAsync()
-        {
-            //later move path to configuration
-            string queryDocsPath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\Test\TextSimilarityAnalyser\MySemanticAnalysisSample\Input\QueryText\Documents";
-            string referenceDocsPath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\Test\TextSimilarityAnalyser\MySemanticAnalysisSample\Input\ReferenceText\Documents";
+        //static async Task<List<string[]>> CompareDocsWithDocsAsync()
+        //{
+        //    //later move path to configuration
+        //    string queryDocsPath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\Test\TextSimilarityAnalyser\MySemanticAnalysisSample\Input\QueryText\Documents";
+        //    string referenceDocsPath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\Test\TextSimilarityAnalyser\MySemanticAnalysisSample\Input\ReferenceText\Documents";
 
-            var queryDocsReader = new FileReader(queryDocsPath);
-            var queryDocs = queryDocsReader.ReadDocuments();
+        //    var queryDocsReader = new FileReader(queryDocsPath);
+        //    var queryDocs = queryDocsReader.ReadDocuments();
 
-            var referenceDocsReader = new FileReader(referenceDocsPath);
-            var referenceDocs = referenceDocsReader.ReadDocuments();
+        //    var referenceDocsReader = new FileReader(referenceDocsPath);
+        //    var referenceDocs = referenceDocsReader.ReadDocuments();
 
 
-            try
-            {
-                if (queryDocs.Count < 1 || referenceDocs.Count < 1)
-                {
-                    throw new NullReferenceException("Minimum one query doc and one reference doc is required to compare");
-                }
+        //    try
+        //    {
+        //        if (queryDocs.Count < 1 || referenceDocs.Count < 1)
+        //        {
+        //            throw new NullReferenceException("Minimum one query doc and one reference doc is required to compare");
+        //        }
 
-                var processor = new TextProcessor();
-                var embeddingGenerator = new ChatGPTEmbeddingGenerator();
+        //        var processor = new TextProcessor();
+        //        var embeddingGenerator = new ChatGPTEmbeddingGenerator();
 
-                var processedQueryDocs = processor.ProcessDocumentList(queryDocs);
-                var processedReferenceDocs = processor.ProcessDocumentList(referenceDocs);
+        //        var processedQueryDocs = processor.ProcessDocumentList(queryDocs);
+        //        var processedReferenceDocs = processor.ProcessDocumentList(referenceDocs);
 
-                var queryEmbeddingDictionary = await embeddingGenerator.EmbedDocumentsListAsync(processedQueryDocs);
-                var referenceEmbeddingDictionary = await embeddingGenerator.EmbedDocumentsListAsync(processedReferenceDocs);
+        //        var queryEmbeddingDictionary = await embeddingGenerator.EmbedDocumentsListAsync(processedQueryDocs);
+        //        var referenceEmbeddingDictionary = await embeddingGenerator.EmbedDocumentsListAsync(processedReferenceDocs);
                 
-                var similarityDataTable = new List<string[]>();
-                var similarityDataTableFirstRow = new List<string>();
-                similarityDataTableFirstRow.Add("    ");
+        //        var similarityDataTable = new List<string[]>();
+        //        var similarityDataTableFirstRow = new List<string>();
+        //        similarityDataTableFirstRow.Add("    ");
 
                 
 
-                foreach (var reference in referenceEmbeddingDictionary)
-                {
-                   similarityDataTableFirstRow.Add(reference.Key);
-                }
+        //        foreach (var reference in referenceEmbeddingDictionary)
+        //        {
+        //           similarityDataTableFirstRow.Add(reference.Key);
+        //        }
 
-                similarityDataTable.Add(similarityDataTableFirstRow.ToArray());
+        //        similarityDataTable.Add(similarityDataTableFirstRow.ToArray());
 
-                var similarityCalculator = new CosineSimilarityCalculator();
+        //        var similarityCalculator = new CosineSimilarityCalculator();
 
-                foreach (var query in queryEmbeddingDictionary)
-                {
-                    var similarityDataTableRow = new List<string>();
-                    similarityDataTableRow.Add(query.Key);
+        //        foreach (var query in queryEmbeddingDictionary)
+        //        {
+        //            var similarityDataTableRow = new List<string>();
+        //            similarityDataTableRow.Add(query.Key);
 
-                    foreach (var reference in referenceEmbeddingDictionary)
-                    {
-                        var similarity = similarityCalculator.CalculateSimilarity(reference.Value, query.Value);
-                        similarityDataTableRow.Add(similarity.ToString());
-                    }
+        //            foreach (var reference in referenceEmbeddingDictionary)
+        //            {
+        //                foreach (var embedding in query.Value)
+        //                {
+        //                    var similarity = similarityCalculator.CalculateSimilarity(reference.Value, embedding);
+        //                    similarityDataTableRow.Add(similarity.ToString());
+        //                }
+                        
+        //            }
 
-                    similarityDataTable.Add(similarityDataTableRow.ToArray());
-                }
+        //            similarityDataTable.Add(similarityDataTableRow.ToArray());
+        //        }
 
-                return similarityDataTable;
-
-
-            }
-            catch (Exception)
-            {
-
-                throw;
-            }
+        //        return similarityDataTable;
 
 
-        }
+        //    }
+        //    catch (Exception)
+        //    {
+
+        //        throw;
+        //    }
+
+
+        //}
     }
 }
