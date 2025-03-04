@@ -4,22 +4,34 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Tiktoken;
 
 namespace MySemanticAnalysisSample.Preprocessing
 {
     internal class TextProcessor : ITextProcessor
     {
-        public Dictionary<string, List<string>> ProcessDocumentList(Dictionary<string, string> documentList)
+        public Dictionary<string, List<string>> ProcessDocumentList(Dictionary<string, string> documentList, bool forWordVsDoc)
         {
-            var maximumWordCount = 300;
-            var ProcessedDocumetList = new Dictionary<string, List<string>>();
+            const int MaximumWordCount = 300;
+            const int MaxTokenCount = 8191;
+            var processedDocumetList = new Dictionary<string, List<string>>();
             foreach (var document in documentList)
             {   
                 var cleanedDocument = CleanDocument(document.Value);
-                var documentChunks = ChunkDocument(cleanedDocument, maximumWordCount);
-                ProcessedDocumetList.Add(document.Key, documentChunks);
+                var documentChunks = new List<string>();
+                if (forWordVsDoc)
+                {
+                    documentChunks = ChunkDocumentByWordCount(cleanedDocument, MaximumWordCount);                    
+                }
+                else
+                {
+                    documentChunks = ChunkDocumentByTokenCount(cleanedDocument, MaxTokenCount);                   
+                }
+
+                processedDocumetList.Add(document.Key, documentChunks);
+                
             }
-            return ProcessedDocumetList;
+            return processedDocumetList;
         }
 
         public List<string> ProcessWordOrPhraseList(List<string> wordOrPhraseList)
@@ -53,7 +65,7 @@ namespace MySemanticAnalysisSample.Preprocessing
             return text;
         }
 
-        public List<string> ChunkDocument(string document, int maxWordCount)
+        public List<string> ChunkDocumentByWordCount(string document, int maxWordCount)
         {
             var chunkedDocuments = new List<string>();
             var wordsinDocument = document.Split(' '); // Split the document into words
@@ -74,6 +86,34 @@ namespace MySemanticAnalysisSample.Preprocessing
             if (chunk.Count > 0)
             {
                 chunkedDocuments.Add(string.Join(" ", chunk));
+            }
+
+            return chunkedDocuments;
+        }
+
+        public List<string> ChunkDocumentByTokenCount(string document, int maxTokenCount)
+        {
+            var chunkedDocuments = new List<string>();
+            var encoder = ModelToEncoder.For("text-embedding-3-large"); //move model name to config
+            var tokens = encoder.Encode(document);
+            var num_tokens = tokens.Count;
+            var chunk = new List<int>(); // Use a list to build each chunk
+
+            // Iterate through the tokens and chunk them
+            foreach (var token in tokens)
+            {
+                chunk.Add(token); // Add the current token to the chunk
+                if (chunk.Count >= maxTokenCount)
+                {
+                    chunkedDocuments.Add(encoder.Decode(chunk)); // decode chunk and add to the chunk list
+                    chunk.Clear(); // Clear the current chunk to start the next one
+                }
+            }
+
+            // Add any remaining token as the last chunk
+            if (chunk.Count > 0)
+            {
+                chunkedDocuments.Add(encoder.Decode(chunk));
             }
 
             return chunkedDocuments;

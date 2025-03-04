@@ -3,6 +3,7 @@ using MySemanticAnalysisSample.FileHandling;
 using MySemanticAnalysisSample.Preprocessing;
 using MySemanticAnalysisSample.SimilarityCalculation;
 using System.Data;
+using System.Reflection.Metadata;
 
 namespace MySemanticAnalysisSample
 {
@@ -13,8 +14,8 @@ namespace MySemanticAnalysisSample
         {
             Console.WriteLine("Welcome to Text Similarity Analyser");
             //var similarityDataTable = await CompareWordsWithWordsAsync();
-            var similarityDataTable = await CompareDocsWithWordsAsync();
-            //var similarityDataTable = await CompareDocsWithDocsAsync();
+            //var similarityDataTable = await CompareDocsWithWordsAsync();
+            var similarityDataTable = await CompareDocsWithDocsAsync();
 
 
 
@@ -124,7 +125,7 @@ namespace MySemanticAnalysisSample
                 var processor = new TextProcessor();
                 var embeddingGenerator = new ChatGPTEmbeddingGenerator();
 
-                var processedQueryDocs = processor.ProcessDocumentList(queryDocs);
+                var processedQueryDocs = processor.ProcessDocumentList(queryDocs, true);
                 var processedReferenceText = processor.ProcessWordOrPhraseList(referenceTexts);
 
                 var queryEmbeddingDictionary = await embeddingGenerator.EmbedDocumentsListAsync(processedQueryDocs);
@@ -187,79 +188,102 @@ namespace MySemanticAnalysisSample
 
         }
 
-        //static async Task<List<string[]>> CompareDocsWithDocsAsync()
-        //{
-        //    //later move path to configuration
-        //    string queryDocsPath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\Test\TextSimilarityAnalyser\MySemanticAnalysisSample\Input\QueryText\Documents";
-        //    string referenceDocsPath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\Test\TextSimilarityAnalyser\MySemanticAnalysisSample\Input\ReferenceText\Documents";
+        static async Task<List<string[]>> CompareDocsWithDocsAsync()
+        {
+            //later move path to configuration
+            string queryDocsPath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\Test\TextSimilarityAnalyser\MySemanticAnalysisSample\Input\QueryText\Documents";
+            string referenceDocsPath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\Test\TextSimilarityAnalyser\MySemanticAnalysisSample\Input\ReferenceText\Documents";
 
-        //    var queryDocsReader = new FileReader(queryDocsPath);
-        //    var queryDocs = queryDocsReader.ReadDocuments();
+            var queryDocsReader = new FileReader(queryDocsPath);
+            var queryDocs = queryDocsReader.ReadDocuments();
 
-        //    var referenceDocsReader = new FileReader(referenceDocsPath);
-        //    var referenceDocs = referenceDocsReader.ReadDocuments();
-
-
-        //    try
-        //    {
-        //        if (queryDocs.Count < 1 || referenceDocs.Count < 1)
-        //        {
-        //            throw new NullReferenceException("Minimum one query doc and one reference doc is required to compare");
-        //        }
-
-        //        var processor = new TextProcessor();
-        //        var embeddingGenerator = new ChatGPTEmbeddingGenerator();
-
-        //        var processedQueryDocs = processor.ProcessDocumentList(queryDocs);
-        //        var processedReferenceDocs = processor.ProcessDocumentList(referenceDocs);
-
-        //        var queryEmbeddingDictionary = await embeddingGenerator.EmbedDocumentsListAsync(processedQueryDocs);
-        //        var referenceEmbeddingDictionary = await embeddingGenerator.EmbedDocumentsListAsync(processedReferenceDocs);
-                
-        //        var similarityDataTable = new List<string[]>();
-        //        var similarityDataTableFirstRow = new List<string>();
-        //        similarityDataTableFirstRow.Add("    ");
-
-                
-
-        //        foreach (var reference in referenceEmbeddingDictionary)
-        //        {
-        //           similarityDataTableFirstRow.Add(reference.Key);
-        //        }
-
-        //        similarityDataTable.Add(similarityDataTableFirstRow.ToArray());
-
-        //        var similarityCalculator = new CosineSimilarityCalculator();
-
-        //        foreach (var query in queryEmbeddingDictionary)
-        //        {
-        //            var similarityDataTableRow = new List<string>();
-        //            similarityDataTableRow.Add(query.Key);
-
-        //            foreach (var reference in referenceEmbeddingDictionary)
-        //            {
-        //                foreach (var embedding in query.Value)
-        //                {
-        //                    var similarity = similarityCalculator.CalculateSimilarity(reference.Value, embedding);
-        //                    similarityDataTableRow.Add(similarity.ToString());
-        //                }
-                        
-        //            }
-
-        //            similarityDataTable.Add(similarityDataTableRow.ToArray());
-        //        }
-
-        //        return similarityDataTable;
+            var referenceDocsReader = new FileReader(referenceDocsPath);
+            var referenceDocs = referenceDocsReader.ReadDocuments();
 
 
-        //    }
-        //    catch (Exception)
-        //    {
+            try
+            {
+                if (queryDocs.Count < 1 || referenceDocs.Count < 1)
+                {
+                    throw new NullReferenceException("Minimum one query doc and one reference doc is required to compare");
+                }
 
-        //        throw;
-        //    }
+                var processor = new TextProcessor();
+                var embeddingGenerator = new ChatGPTEmbeddingGenerator();
+
+                var processedQueryDocs = processor.ProcessDocumentList(queryDocs, false);
+                var processedReferenceDocs = processor.ProcessDocumentList(referenceDocs, false);
+            
+                var queryEmbeddingDictionary = await embeddingGenerator.EmbedDocumentsListAsync(processedQueryDocs);
+                var referenceEmbeddingDictionary = await embeddingGenerator.EmbedDocumentsListAsync(processedReferenceDocs);
+
+                var queryDictionary = CalculateMeanEmbedding(queryEmbeddingDictionary);
+                var refDictionary = CalculateMeanEmbedding(referenceEmbeddingDictionary);
+
+               
+                var similarityDataTable = new List<string[]>();
+                var similarityDataTableFirstRow = new List<string>();
+                similarityDataTableFirstRow.Add("    ");
 
 
-        //}
+
+                foreach (var reference in refDictionary)
+                {
+                    similarityDataTableFirstRow.Add(reference.Key);
+                }
+
+                similarityDataTable.Add(similarityDataTableFirstRow.ToArray());
+
+                var similarityCalculator = new CosineSimilarityCalculator();
+
+                foreach (var query in queryDictionary)
+                {
+                    var similarityDataTableRow = new List<string>();
+                    similarityDataTableRow.Add(query.Key);
+
+                    foreach (var reference in refDictionary)
+                    {                        
+                        var similarity = similarityCalculator.CalculateSimilarity(reference.Value, query.Value);
+                        similarityDataTableRow.Add(similarity.ToString());                       
+
+                    }
+
+                    similarityDataTable.Add(similarityDataTableRow.ToArray());
+                }
+
+                return similarityDataTable;
+
+
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
+
+        }
+
+        static Dictionary<string, float[]> CalculateMeanEmbedding (Dictionary<string, List<float[]>> embDictionary)
+        {
+            var dictionary = new Dictionary<string, float[]>();
+
+            foreach (var doc in embDictionary)
+            {
+                if (doc.Value.Count > 0)
+                {
+                    int embeddingSize = doc.Value[0].Length;
+                    var avgEmbedding = new float[embeddingSize];
+
+                    for (int i = 0; i < embeddingSize; i++)
+                    {
+                        avgEmbedding[i] = doc.Value.Average(e => e[i]);
+                    }
+
+                    dictionary.Add(doc.Key, avgEmbedding);
+                }
+            }
+            return dictionary;
+        }
     }
 }
