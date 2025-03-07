@@ -13,9 +13,9 @@ namespace MySemanticAnalysisSample
         static async Task Main(string[] args)
         {
             Console.WriteLine("Welcome to Text Similarity Analyser");
-            //var similarityDataTable = await CompareWordsWithWordsAsync();
+            var similarityDataTable = await CompareWordsWithWordsAsync();
             //var similarityDataTable = await CompareDocsWithWordsAsync();
-            var similarityDataTable = await CompareDocsWithDocsAsync();
+            //var similarityDataTable = await CompareDocsWithDocsAsync();
 
 
 
@@ -72,8 +72,8 @@ namespace MySemanticAnalysisSample
 
                 similarityDataTable.Add(similarityDataTableFirstRow.ToArray());
 
-                var similarityCalculator = new CosineSimilarityCalculator();
-
+                //var similarityCalculator = new CosineSimilarityCalculator();
+                var similarityCalculator = new EuclideanDistanceCalculator();
                 foreach (var query in queryEmbeddingDictionary)
                 {
 
