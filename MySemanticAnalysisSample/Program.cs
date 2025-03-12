@@ -78,7 +78,39 @@ namespace MySemanticAnalysisSample
         {
             string queryWordsPath = config["queryWordsPath"];
             string referenceWordsPath = config["referenceWordsPath"];
-                      
+
+            if (string.IsNullOrEmpty(queryWordsPath) || string.IsNullOrEmpty(referenceWordsPath))
+            {
+                Console.WriteLine("Error: Missing required file paths.");
+                Console.WriteLine("Please provide 'queryWordsPath' and 'referenceWordsPath' via command-line arguments or appsettings.json.");
+                Console.WriteLine("Command-line arguments usage: MySemanticAnalysisSample.exe --mode CompareWordsWithWords --queryWordsPath \"path/to/querywords.txt\" --referenceWordsPath \"path/to/referencewords.txt\"");
+                return null;
+            }
+
+            if (!File.Exists(queryWordsPath))
+            {
+                Console.WriteLine($"Error: Query words file not found at: {queryWordsPath}");
+                return null;
+            }
+
+            if (!File.Exists(referenceWordsPath))
+            {
+                Console.WriteLine($"Error: Reference words file not found at: {referenceWordsPath}");
+                return null;
+            }
+
+            if (Path.GetExtension(queryWordsPath).ToLower() != ".txt")
+            {
+                Console.WriteLine($"Error: Invalid query words file. The file must be a .txt file with each query word on a separate line. Found: {queryWordsPath}");
+                return null;
+            }
+
+            if (Path.GetExtension(referenceWordsPath).ToLower() != ".txt")
+            {
+                Console.WriteLine($"Error: Invalid reference words file. The file must be a .txt file with each reference word on a separate line. Found: {referenceWordsPath}");
+                return null;
+            }
+
             var queryWordsReader = new FileReader(queryWordsPath);
             var queryWords = queryWordsReader.ReadWordsOrPhrases();
 
@@ -152,6 +184,33 @@ namespace MySemanticAnalysisSample
 
             string queryDocumentsPath = config["queryDocumentsPath"];
             string referenceWordsPath = config["referenceWordsPath"];
+
+            if (string.IsNullOrEmpty(queryDocumentsPath) || string.IsNullOrEmpty(referenceWordsPath))
+            {
+                Console.WriteLine("Error: Missing required file paths.");
+                Console.WriteLine("Please provide 'queryDocumentPath' and 'referenceWordsPath' via command-line arguments or appsettings.json.");
+                Console.WriteLine("Command-line arguments usage: MySemanticAnalysisSample.exe --mode CompareDocumentsWithWords --queryDocumentsPath \"path/to/querydocumentsfolder\" --referenceWordsPath \"path/to/referencewords.txt\"");
+                return null;
+            }
+
+            if (!Directory.Exists(queryDocumentsPath))
+            {
+                Console.WriteLine($"Error: Query documents path must be a directory containing documents as .txt files. Found: {queryDocumentsPath}");
+                return null;
+            }
+
+            if (!File.Exists(referenceWordsPath))
+            {
+                Console.WriteLine($"Error: Reference words file not found at: {referenceWordsPath}");
+                return null;
+            }
+
+            
+            if (Path.GetExtension(referenceWordsPath).ToLower() != ".txt")
+            {
+                Console.WriteLine($"Error: Invalid reference words file. The file must be a .txt file with each reference word on a separate line. Found: {referenceWordsPath}");
+                return null;
+            }
 
             var queryDocsReader = new FileReader(queryDocumentsPath);
             var queryDocs = queryDocsReader.ReadDocuments();
@@ -237,6 +296,25 @@ namespace MySemanticAnalysisSample
         {
             string queryDocumentsPath = config["queryDocumentsPath"];
             string referenceDocumentsPath = config["referenceDocumentsPath"];
+
+            if (string.IsNullOrEmpty(queryDocumentsPath) || string.IsNullOrEmpty(referenceDocumentsPath))
+            {
+                Console.WriteLine("Error: Missing required file paths.");
+                Console.WriteLine("Please provide 'queryDocumentPath' and 'referenceDocumentsPath' via command-line arguments or appsettings.json.");
+                Console.WriteLine("Command-line arguments usage: MySemanticAnalysisSample.exe --mode CompareDocumentsWithDocuments --queryDocumentsPath \"path/to/querydocumentsfolder\" --referenceDocumentsPath \"path/to/referencedocumentsfolder\"");
+                return null;
+            }
+
+            if (!Directory.Exists(queryDocumentsPath))
+            {
+                Console.WriteLine($"Error: Query documents path must be a directory containing query documents as .txt files. Found: {queryDocumentsPath}");
+                return null;
+            }
+            if (!Directory.Exists(referenceDocumentsPath))
+            {
+                Console.WriteLine($"Error: Reference documents path must be a directory containing reference documents as .txt files. Found: {referenceDocumentsPath}");
+                return null;
+            }
 
             var queryDocsReader = new FileReader(queryDocumentsPath);
             var queryDocs = queryDocsReader.ReadDocuments();
