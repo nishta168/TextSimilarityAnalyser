@@ -2,6 +2,8 @@
 using MySemanticAnalysisSample.FileHandling;
 using MySemanticAnalysisSample.Preprocessing;
 using MySemanticAnalysisSample.SimilarityCalculation;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Json;
 using System.Data;
 using System.Reflection.Metadata;
 
@@ -38,13 +40,14 @@ namespace MySemanticAnalysisSample
 
         static async Task<List<string[]>> CompareWordsWithWordsAsync(IConfiguration config)
         {
-            //later move path to configuration
-            string queryTextPath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\Test\TextSimilarityAnalyser\MySemanticAnalysisSample\Input\QueryText\";
-            string referenceTextPath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\Test\TextSimilarityAnalyser\MySemanticAnalysisSample\Input\ReferenceText\";
+            string queryWordsPath = config["queryWordsPath"];
+            string referenceWordsPath = config["referenceWordsPath"];
 
-            queryTextPath = queryTextPath + "WordsOrPhrases.txt"; //move to config
-            referenceTextPath = referenceTextPath + "WordsOrPhrases.txt"; //move to config
+            var queryWordsReader = new FileReader(queryWordsPath);
+            var queryWords = queryWordsReader.ReadWordsOrPhrases();
 
+            var referenceWordsReader = new FileReader(referenceWordsPath);
+            var referenceWords = referenceWordsReader.ReadWordsOrPhrases();
             
             var queryTextReader = new FileReader(queryTextPath);
             var queryTexts = queryTextReader.ReadWordsOrPhrases();
@@ -56,7 +59,7 @@ namespace MySemanticAnalysisSample
 
             try
             {
-                if (queryTexts.Count < 1 || referenceTexts.Count < 1)
+                if (queryWords.Count < 1 || referenceWords.Count < 1)
                 {
                     throw new NullReferenceException("Minimum one query text and reference text required to compare");
                 }
@@ -64,11 +67,11 @@ namespace MySemanticAnalysisSample
                 var processor = new TextProcessor();
                 var embeddingGenerator = new ChatGPTEmbeddingGenerator(config);
 
-                var processedQueryText = processor.ProcessWordOrPhraseList(queryTexts);
-                var processedReferenceText = processor.ProcessWordOrPhraseList(referenceTexts);
+                var processedQueryWords = processor.ProcessWordOrPhraseList(queryWords);
+                var processedReferenceWords = processor.ProcessWordOrPhraseList(referenceWords);
 
-                var queryEmbeddingDictionary = await embeddingGenerator.EmbedWordsListAsync(processedQueryText);
-                var referenceEmbeddingDictionary = await embeddingGenerator.EmbedWordsListAsync(processedReferenceText);
+                var queryEmbeddingDictionary = await embeddingGenerator.EmbedWordsListAsync(processedQueryWords);
+                var referenceEmbeddingDictionary = await embeddingGenerator.EmbedWordsListAsync(processedReferenceWords);
 
                 
                 var similarityDataTable = new List<string[]>();
@@ -114,20 +117,20 @@ namespace MySemanticAnalysisSample
 
         static async Task<List<string[]>> CompareDocsWithWordsAsync(IConfiguration config)
         {
-            //later move path to configuration
-            string queryDocsPath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\Test\TextSimilarityAnalyser\MySemanticAnalysisSample\Input\QueryText\Documents";
-            string referenceTextPath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\Test\TextSimilarityAnalyser\MySemanticAnalysisSample\Input\ReferenceText\WordsOrPhrases.txt";
 
-            var queryDocsReader = new FileReader(queryDocsPath);
+            string queryDocumentsPath = config["queryDocumentsPath"];
+            string referenceWordsPath = config["referenceWordsPath"];
+
+            var queryDocsReader = new FileReader(queryDocumentsPath);
             var queryDocs = queryDocsReader.ReadDocuments();
 
-            var referenceTextReader = new FileReader(referenceTextPath);
-            var referenceTexts = referenceTextReader.ReadWordsOrPhrases();
+            var referenceWordsReader = new FileReader(referenceWordsPath);
+            var referenceWords = referenceWordsReader.ReadWordsOrPhrases();
 
 
             try
             {
-                if (queryDocs.Count < 1 || referenceTexts.Count < 1)
+                if (queryDocs.Count < 1 || referenceWords.Count < 1)
                 {
                     throw new NullReferenceException("Minimum one query doc and reference text is required to compare");
                 }
@@ -136,10 +139,10 @@ namespace MySemanticAnalysisSample
                 var embeddingGenerator = new ChatGPTEmbeddingGenerator(config);
 
                 var processedQueryDocs = processor.ProcessDocumentList(queryDocs, true);
-                var processedReferenceText = processor.ProcessWordOrPhraseList(referenceTexts);
+                var processedReferenceWords = processor.ProcessWordOrPhraseList(referenceWords);
 
                 var queryEmbeddingDictionary = await embeddingGenerator.EmbedDocumentsListAsync(processedQueryDocs);
-                var referenceEmbeddingDictionary = await embeddingGenerator.EmbedWordsListAsync(processedReferenceText);
+                var referenceEmbeddingDictionary = await embeddingGenerator.EmbedWordsListAsync(processedReferenceWords);
                 
                 var similarityDataTable = new List<string[]>();
                 var similarityDataTableFirstRow = new List<string>();
@@ -200,14 +203,13 @@ namespace MySemanticAnalysisSample
 
         static async Task<List<string[]>> CompareDocsWithDocsAsync(IConfiguration config)
         {
-            //later move path to configuration
-            string queryDocsPath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\Test\TextSimilarityAnalyser\MySemanticAnalysisSample\Input\QueryText\Documents";
-            string referenceDocsPath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\Test\TextSimilarityAnalyser\MySemanticAnalysisSample\Input\ReferenceText\Documents";
+            string queryDocumentsPath = config["queryDocumentsPath"];
+            string referenceDocumentsPath = config["referenceDocumentsPath"];
 
-            var queryDocsReader = new FileReader(queryDocsPath);
+            var queryDocsReader = new FileReader(queryDocumentsPath);
             var queryDocs = queryDocsReader.ReadDocuments();
 
-            var referenceDocsReader = new FileReader(referenceDocsPath);
+            var referenceDocsReader = new FileReader(referenceDocumentsPath);
             var referenceDocs = referenceDocsReader.ReadDocuments();
 
 
