@@ -21,39 +21,69 @@ namespace MySemanticAnalysisSample
                 .AddCommandLine(args) // Load from command-line arguments
                 .Build();
 
+            var mode = config["mode"]?.ToLower(); // Convert to lowercase for case-insensitive comparison
+
+            var validModes = new HashSet<string>
+            {
+                "comparewordswithwords",
+                "comparedocumentswithwords",
+                "comparedocumentswithdocuments"
+            };
+
+            if (string.IsNullOrEmpty(mode) || !validModes.Contains(mode))
+            {
+                Console.WriteLine("Invalid mode! Please enter a valid mode of comparison.");
+                Console.WriteLine("Usage: MySemanticAnalysisSample.exe --mode <CompareWordsWithWords | CompareDocumentsWithWords | CompareDocumentsWithDocuments>");
+                return;
+            }
+
+            Console.WriteLine($"Selected mode: {mode}");
+
+            var similarityDataTable = new List<string[]>();
 
 
+            // Call the appropriate method based on the mode
+            if (mode == "comparewordswithwords")
+            {
+                similarityDataTable = await CompareWordsWithWordsAsync(config);
+            }
+            else if (mode == "comparedocumentswithwords")
+            {
+                similarityDataTable = await CompareDocsWithWordsAsync(config);
+            }
+            else if (mode == "comparedocumentswithdocuments")
+            {
+                similarityDataTable = await CompareDocsWithDocsAsync(config);
+            }
 
-            //var similarityDataTable = await CompareWordsWithWordsAsync(config);
-            //var similarityDataTable = await CompareDocsWithWordsAsync(config);
-            var similarityDataTable = await CompareDocsWithDocsAsync(config);
 
+            string outputCSVPath = config["outputCSVPath"];
 
-            string outputFolder = AppContext.BaseDirectory;  // Same folder as the app
-            string outputFilePath = Path.Combine(outputFolder, "similarity_result.csv");
+            if (string.IsNullOrEmpty(outputCSVPath) || !Directory.Exists(Path.GetDirectoryName(outputCSVPath)))
+            {
+                string outputFolder = AppContext.BaseDirectory; // Default: Same folder as the app
+                string outputFilePath = Path.Combine(outputFolder, "similarity_result.csv");
+                CSVWriter.WriteToCSV(outputFilePath, similarityDataTable);
+                Console.WriteLine($"Similarity data successfully written to: {outputFilePath}");
+            }
+            else
+            {
+                CSVWriter.WriteToCSV(outputCSVPath, similarityDataTable);
+                Console.WriteLine($"Similarity data successfully written to: {outputCSVPath}");
+            }
 
-            //string outputFilePath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\Test\TextSimilarityAnalyser\MySemanticAnalysisSample\Output\similarity_result.csv";
-            CSVWriter.WriteToCSV(outputFilePath, similarityDataTable);
-            Console.WriteLine("Similarity data successfully written to file");
-         
         }
 
         static async Task<List<string[]>> CompareWordsWithWordsAsync(IConfiguration config)
         {
             string queryWordsPath = config["queryWordsPath"];
             string referenceWordsPath = config["referenceWordsPath"];
-
+                      
             var queryWordsReader = new FileReader(queryWordsPath);
             var queryWords = queryWordsReader.ReadWordsOrPhrases();
 
             var referenceWordsReader = new FileReader(referenceWordsPath);
             var referenceWords = referenceWordsReader.ReadWordsOrPhrases();
-            
-            var queryTextReader = new FileReader(queryTextPath);
-            var queryTexts = queryTextReader.ReadWordsOrPhrases();
-
-            var referenceTextReader = new FileReader(referenceTextPath);
-            var referenceTexts = referenceTextReader.ReadWordsOrPhrases();
 
 
 
@@ -86,7 +116,9 @@ namespace MySemanticAnalysisSample
                 similarityDataTable.Add(similarityDataTableFirstRow.ToArray());
 
                 //var similarityCalculator = new CosineSimilarityCalculator();
-                var similarityCalculator = new EuclideanDistanceCalculator();
+                //var similarityCalculator = new EuclideanDistanceCalculator();
+                //var similarityCalculator = new DotProductSimilarityCalculator();
+                var similarityCalculator = new JaccardSimilarityCalculator();
                 foreach (var query in queryEmbeddingDictionary)
                 {
 
@@ -143,7 +175,7 @@ namespace MySemanticAnalysisSample
 
                 var queryEmbeddingDictionary = await embeddingGenerator.EmbedDocumentsListAsync(processedQueryDocs);
                 var referenceEmbeddingDictionary = await embeddingGenerator.EmbedWordsListAsync(processedReferenceWords);
-                
+
                 var similarityDataTable = new List<string[]>();
                 var similarityDataTableFirstRow = new List<string>();
                 similarityDataTableFirstRow.Add("    ");
@@ -225,14 +257,14 @@ namespace MySemanticAnalysisSample
 
                 var processedQueryDocs = processor.ProcessDocumentList(queryDocs, false);
                 var processedReferenceDocs = processor.ProcessDocumentList(referenceDocs, false);
-            
+
                 var queryEmbeddingDictionary = await embeddingGenerator.EmbedDocumentsListAsync(processedQueryDocs);
                 var referenceEmbeddingDictionary = await embeddingGenerator.EmbedDocumentsListAsync(processedReferenceDocs);
 
                 var queryDictionary = CalculateMeanEmbedding(queryEmbeddingDictionary);
                 var refDictionary = CalculateMeanEmbedding(referenceEmbeddingDictionary);
 
-               
+
                 var similarityDataTable = new List<string[]>();
                 var similarityDataTableFirstRow = new List<string>();
                 similarityDataTableFirstRow.Add("    ");
@@ -254,9 +286,9 @@ namespace MySemanticAnalysisSample
                     similarityDataTableRow.Add(query.Key);
 
                     foreach (var reference in refDictionary)
-                    {                        
+                    {
                         var similarity = similarityCalculator.CalculateSimilarity(reference.Value, query.Value);
-                        similarityDataTableRow.Add(similarity.ToString());                       
+                        similarityDataTableRow.Add(similarity.ToString());
 
                     }
 
