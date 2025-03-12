@@ -1,8 +1,5 @@
-﻿using OpenAI.Embeddings;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.Configuration;
+using OpenAI.Embeddings;
 
 namespace MySemanticAnalysisSample.Embedding
 {
@@ -16,16 +13,22 @@ namespace MySemanticAnalysisSample.Embedding
         /// <summary>
         /// Constructor that initializes the EmbeddingClient with the OpenAI API key.
         /// </summary>
-        public ChatGPTEmbeddingGenerator()
+        public ChatGPTEmbeddingGenerator(IConfiguration config)
         {
-            string apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY"); // Move to appsettings.json later
+            string apiKey = config["OPENAI_API_KEY"];
+            string embeddingModel = config["OpenAI:EmbeddingModel"];
 
             if (string.IsNullOrEmpty(apiKey))
             {
-                throw new InvalidOperationException("The OpenAI API key is not set in the environment variables.");
-            }
+                Console.Write("Enter your OpenAI API key: ");
+                apiKey = Console.ReadLine();
+                Environment.SetEnvironmentVariable("OPENAI_API_KEY", apiKey, EnvironmentVariableTarget.User);
+                Console.WriteLine("API key saved. You won’t have to enter it next time.");
+                _client = new EmbeddingClient(embeddingModel, apiKey);
 
-            _client = new EmbeddingClient("text-embedding-3-large", apiKey);
+            }
+            else
+            _client = new EmbeddingClient(embeddingModel, apiKey);
         }
 
         /// <summary>

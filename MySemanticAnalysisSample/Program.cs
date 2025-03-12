@@ -13,20 +13,30 @@ namespace MySemanticAnalysisSample
         static async Task Main(string[] args)
         {
             Console.WriteLine("Welcome to Text Similarity Analyser");
-            var similarityDataTable = await CompareWordsWithWordsAsync();
-            //var similarityDataTable = await CompareDocsWithWordsAsync();
-            //var similarityDataTable = await CompareDocsWithDocsAsync();
+            var config = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true) // Load from appsettings.json
+                .AddEnvironmentVariables() // Load from environment variables
+                .AddCommandLine(args) // Load from command-line arguments
+                .Build();
 
 
 
 
-            string outputFilePath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\Test\TextSimilarityAnalyser\MySemanticAnalysisSample\Output\similarity_result.csv";
+            //var similarityDataTable = await CompareWordsWithWordsAsync(config);
+            //var similarityDataTable = await CompareDocsWithWordsAsync(config);
+            var similarityDataTable = await CompareDocsWithDocsAsync(config);
+
+
+            string outputFolder = AppContext.BaseDirectory;  // Same folder as the app
+            string outputFilePath = Path.Combine(outputFolder, "similarity_result.csv");
+
+            //string outputFilePath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\Test\TextSimilarityAnalyser\MySemanticAnalysisSample\Output\similarity_result.csv";
             CSVWriter.WriteToCSV(outputFilePath, similarityDataTable);
             Console.WriteLine("Similarity data successfully written to file");
          
         }
 
-        static async Task<List<string[]>> CompareWordsWithWordsAsync()
+        static async Task<List<string[]>> CompareWordsWithWordsAsync(IConfiguration config)
         {
             //later move path to configuration
             string queryTextPath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\Test\TextSimilarityAnalyser\MySemanticAnalysisSample\Input\QueryText\";
@@ -52,7 +62,7 @@ namespace MySemanticAnalysisSample
                 }
 
                 var processor = new TextProcessor();
-                var embeddingGenerator = new ChatGPTEmbeddingGenerator();
+                var embeddingGenerator = new ChatGPTEmbeddingGenerator(config);
 
                 var processedQueryText = processor.ProcessWordOrPhraseList(queryTexts);
                 var processedReferenceText = processor.ProcessWordOrPhraseList(referenceTexts);
@@ -102,7 +112,7 @@ namespace MySemanticAnalysisSample
 
         }
 
-        static async Task<List<string[]>> CompareDocsWithWordsAsync()
+        static async Task<List<string[]>> CompareDocsWithWordsAsync(IConfiguration config)
         {
             //later move path to configuration
             string queryDocsPath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\Test\TextSimilarityAnalyser\MySemanticAnalysisSample\Input\QueryText\Documents";
@@ -123,7 +133,7 @@ namespace MySemanticAnalysisSample
                 }
 
                 var processor = new TextProcessor();
-                var embeddingGenerator = new ChatGPTEmbeddingGenerator();
+                var embeddingGenerator = new ChatGPTEmbeddingGenerator(config);
 
                 var processedQueryDocs = processor.ProcessDocumentList(queryDocs, true);
                 var processedReferenceText = processor.ProcessWordOrPhraseList(referenceTexts);
@@ -188,7 +198,7 @@ namespace MySemanticAnalysisSample
 
         }
 
-        static async Task<List<string[]>> CompareDocsWithDocsAsync()
+        static async Task<List<string[]>> CompareDocsWithDocsAsync(IConfiguration config)
         {
             //later move path to configuration
             string queryDocsPath = @"C:\Users\NISHTA\OneDrive\Univeristy\sem_1\software_eng\ML_09\Test\TextSimilarityAnalyser\MySemanticAnalysisSample\Input\QueryText\Documents";
@@ -209,7 +219,7 @@ namespace MySemanticAnalysisSample
                 }
 
                 var processor = new TextProcessor();
-                var embeddingGenerator = new ChatGPTEmbeddingGenerator();
+                var embeddingGenerator = new ChatGPTEmbeddingGenerator(config);
 
                 var processedQueryDocs = processor.ProcessDocumentList(queryDocs, false);
                 var processedReferenceDocs = processor.ProcessDocumentList(referenceDocs, false);
