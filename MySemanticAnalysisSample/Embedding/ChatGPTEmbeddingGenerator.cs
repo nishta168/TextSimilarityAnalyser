@@ -15,20 +15,24 @@ namespace MySemanticAnalysisSample.Embedding
         /// </summary>
         public ChatGPTEmbeddingGenerator(IConfiguration config)
         {
-            string apiKey = config["OPENAI_API_KEY"];
-            string embeddingModel = config["OpenAI:EmbeddingModel"];
-
-            if (string.IsNullOrEmpty(apiKey))
+            string apiKey = config["OpenAI:apiKey"] ?? throw new ArgumentException("Missing OpenAI API Key in configuration.");
+            string embeddingModel = config["OpenAI:EmbeddingModel"] ?? throw new ArgumentException("Missing OpenAI embedding model in configuration.");          
+            
+            if(string.IsNullOrEmpty(apiKey))
             {
-                Console.Write("Enter your OpenAI API key: ");
-                apiKey = Console.ReadLine();
-                Environment.SetEnvironmentVariable("OPENAI_API_KEY", apiKey, EnvironmentVariableTarget.User);
-                Console.WriteLine("API key saved. You won’t have to enter it next time.");
-                _client = new EmbeddingClient(embeddingModel, apiKey);
-
+                throw new ArgumentException("OpenAI API Key cannot be an empty string. Please provide valid API Key in configuration file");
             }
-            else
+            if (string.IsNullOrEmpty(embeddingModel))
+            {
+                throw new ArgumentException("Please provide embedding model in configuration");
+            }
+            if(!ValidateOpenAIKey(apiKey, embeddingModel))
+            {
+                throw new ArgumentException("Invalid OpenAI API Key");
+            }
+
             _client = new EmbeddingClient(embeddingModel, apiKey);
+            
         }
 
         /// <summary>
@@ -39,27 +43,25 @@ namespace MySemanticAnalysisSample.Embedding
         public async Task<Dictionary<string, List<float[]>>> EmbedDocumentsListAsync(Dictionary<string, List<string>> documents)
         {
             var embeddingsDictionary = new Dictionary<string, List<float[]>>();
+           
+            foreach ( var document in documents)
+            {
+                var chunks = document.Value;
+                var chunkEmbeddings = new List<float[]>();
 
-            try
-            {
-                foreach ( var document in documents)
+                OpenAIEmbeddingCollection embeddingResults = await _client.GenerateEmbeddingsAsync(chunks);
+
+                if (embeddingResults == null || embeddingResults.Count != chunks.Count)
                 {
-                    var chunks = document.Value.ToList();
-                    var chunkEmbeddings = new List<float[]>();
-                    OpenAIEmbeddingCollection embeddingResults = await _client.GenerateEmbeddingsAsync(chunks);
-                    if(embeddingResults != null)
-                    {
-                        for( int i = 0; i < embeddingResults.Count; i++)
-                        {
-                            chunkEmbeddings.Add(embeddingResults[i].ToFloats().ToArray());
-                        }
-                        embeddingsDictionary.Add(document.Key, chunkEmbeddings);
-                    }
-                }                              
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error generating embeddings: {ex.Message}");
+                    throw new ApplicationException($"Embedding API error while embedding document '{document.Key}'.");
+                }
+
+                foreach (var embedding in embeddingResults)
+                {
+                    chunkEmbeddings.Add(embedding.ToFloats().ToArray());
+                }
+
+                embeddingsDictionary.Add(document.Key, chunkEmbeddings);
             }
 
             return embeddingsDictionary;
@@ -72,16 +74,20 @@ namespace MySemanticAnalysisSample.Embedding
         /// <returns>Embedding vector as a float array.</returns>
         public async Task<float[]> EmbedTextAsync(string text)
         {
-            try
+            if (string.IsNullOrWhiteSpace(text))
             {
-                OpenAIEmbedding embedding = await _client.GenerateEmbeddingAsync(text);
-                return embedding.ToFloats().ToArray();
+                throw new ArgumentException("Input text cannot be null or empty.", nameof(text));
             }
-            catch (Exception ex)
+
+            OpenAIEmbedding embedding = await _client.GenerateEmbeddingAsync(text);
+
+            if (embedding == null)
             {
-                Console.WriteLine($"Error generating embedding for text: {ex.Message}");
-                return Array.Empty<float>(); // Return an empty array in case of error
+                throw new ApplicationException($"Embedding generation failed: OpenAI API returned a null response for input '{text}'.");
             }
+
+            return embedding.ToFloats().ToArray();
+
         }
 
         /// <summary>
@@ -93,30 +99,33 @@ namespace MySemanticAnalysisSample.Embedding
         {
             var embeddingsDictionary = new Dictionary<string, float[]>();
 
+            OpenAIEmbeddingCollection embeddingResults = await _client.GenerateEmbeddingsAsync(words.ToArray());
+
+            if (embeddingResults == null || embeddingResults.Count != words.Count)
+            {
+                throw new ApplicationException($"Embedding API error while embedding list of words.");
+            }
+
+            for (int i = 0; i < words.Count; i++)
+            {
+                embeddingsDictionary[words[i]] = embeddingResults[i].ToFloats().ToArray();
+            }          
+            
+            return embeddingsDictionary;
+        }
+
+        private static bool ValidateOpenAIKey(string apiKey, string embeddingModel)
+        {
             try
             {
-                var wordsArray = words.ToArray();
-                OpenAIEmbeddingCollection embeddingResults = await _client.GenerateEmbeddingsAsync(wordsArray);
-
-
-                if (embeddingResults != null && embeddingResults.Count == words.Count)
-                {
-                    for (int i = 0; i < words.Count; i++)
-                    {
-                        embeddingsDictionary[words[i]] = embeddingResults[i].ToFloats().ToArray();
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Error: Embedding response does not match input size.");
-                }
+                var testClient = new EmbeddingClient(embeddingModel, apiKey);
+                var testResult = testClient.GenerateEmbeddingAsync("test").GetAwaiter().GetResult();
+                return testResult != null; // Return true if the API key is valid
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"Error generating embeddings: {ex.Message}");
+                return false; // Return false if the API key is invalid
             }
-
-            return embeddingsDictionary;
         }
     }
 }
