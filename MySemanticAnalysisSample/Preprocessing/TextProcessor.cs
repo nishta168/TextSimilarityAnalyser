@@ -13,8 +13,8 @@ namespace MySemanticAnalysisSample.Preprocessing
         public Dictionary<string, List<string>> ProcessDocumentList(Dictionary<string, string> documentList, bool forWordVsDoc)
         {
             const int MaximumWordCount = 300;
-            const int MaxTokenCount = 8191;
-            var processedDocumetList = new Dictionary<string, List<string>>();
+            const int MaxTokenCount = 8191;  
+            var processedDocumentList = new Dictionary<string, List<string>>();
             foreach (var document in documentList)
             {   
                 var cleanedDocument = CleanDocument(document.Value);
@@ -28,10 +28,10 @@ namespace MySemanticAnalysisSample.Preprocessing
                     documentChunks = ChunkDocumentByTokenCount(cleanedDocument, MaxTokenCount);                   
                 }
 
-                processedDocumetList.Add(document.Key, documentChunks);
+                processedDocumentList.Add(document.Key, documentChunks);
                 
             }
-            return processedDocumetList;
+            return processedDocumentList;
         }
 
         public List<string> ProcessWordOrPhraseList(List<string> wordOrPhraseList)
@@ -94,7 +94,7 @@ namespace MySemanticAnalysisSample.Preprocessing
         public List<string> ChunkDocumentByTokenCount(string document, int maxTokenCount)
         {
             var chunkedDocuments = new List<string>();
-            var encoder = ModelToEncoder.For("text-embedding-3-large"); //move model name to config
+            var encoder = ModelToEncoder.For("text-embedding-3-large");
             var tokens = encoder.Encode(document);
             var num_tokens = tokens.Count;
             var chunk = new List<int>(); // Use a list to build each chunk

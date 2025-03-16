@@ -11,72 +11,43 @@ namespace MySemanticAnalysisSample.FileHandling
         private readonly string _filesPath;
 
         public FileReader(string filesPath)
-        {
-            if (string.IsNullOrWhiteSpace(filesPath))
-            {
-                throw new ArgumentException("The file path cannot be null or empty.", nameof(filesPath));
-            }
-
-            if (!Directory.Exists(filesPath) && !File.Exists(filesPath))  // Check if it's a valid directory or file
-            {
-                throw new DirectoryNotFoundException($"The specified path does not exist: {filesPath}");
-            }
-
+        {          
             _filesPath = filesPath;
         }
-
+                
         public Dictionary<string, string> ReadDocuments()
         {
             var documents = new Dictionary<string, string>();
 
-            try
+            var documentFiles = Directory.GetFiles(_filesPath, "*.txt");
+           
+            foreach (var file in documentFiles)
             {
-                var documentFiles = Directory.GetFiles(_filesPath, "*.txt");
+                string documentLabel = Path.GetFileNameWithoutExtension(file);
+                string documentContent = File.ReadAllText(file);
 
-                foreach (var file in documentFiles)
-                {
-                    try
-                    {
-                        string documentLabel = Path.GetFileNameWithoutExtension(file);
-                        string documentContent = File.ReadAllText(file);
-                        if (string.IsNullOrWhiteSpace(documentContent))
-                        {
-                            throw new InvalidOperationException("The file is empty or contains only whitespace.");
-                        }
-                        documents.Add(documentLabel, documentContent);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error reading file {file}: {ex.Message}");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error accessing directory {_filesPath}: {ex.Message}");
+                if (string.IsNullOrWhiteSpace(documentContent))
+                    throw new InvalidOperationException($"The document '{file}' is empty or contains only whitespace.");
+
+                documents.Add(documentLabel, documentContent);
             }
 
             return documents;
         }
 
+
         public List<string> ReadWordsOrPhrases()
         {
             var words = new List<string>();
 
-            try
+            words = File.ReadLines(_filesPath)
+                    .Select(line => line.Trim()) // Remove leading/trailing whitespace
+                    .Where(line => !string.IsNullOrWhiteSpace(line)) // Filter out empty lines
+                    .ToList();
+
+            if (words.Count < 1)
             {
-                if (File.Exists(_filesPath))  // Ensure it's a valid file
-                {
-                    words = File.ReadLines(_filesPath).ToList();
-                }
-                else
-                {
-                    Console.WriteLine($"File not found: {_filesPath}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error reading file {_filesPath}: {ex.Message}");
+                throw new InvalidOperationException($"The input .txt file '{_filesPath}' is empty or contains only whitespace. It must contain words or phrases on separate lines.");
             }
 
             return words;
