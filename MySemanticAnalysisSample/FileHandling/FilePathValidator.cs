@@ -49,5 +49,20 @@ namespace MySemanticAnalysisSample.FileHandling
             }
 
         }
+
+        public static string ValidateOutputFilePath(string filePath, string fileName)
+        {
+            if (Path.Exists(filePath))
+            {
+                return filePath; 
+            }
+            else
+            {
+                string outputFolder = AppContext.BaseDirectory; // Default: Same folder as the app
+                string outputFilePath = Path.Combine(outputFolder, fileName);
+                return outputFilePath;
+            }
+
+        }
     }
 }

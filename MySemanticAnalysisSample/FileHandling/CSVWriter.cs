@@ -10,13 +10,9 @@ namespace MySemanticAnalysisSample.FileHandling
     internal class CSVWriter
     {
 
-        public static void WriteToCSV (string outputfilePath, List<string[]> similarityDataTable)
+        public static void WriteSimilarityToCSV (string outputfilePath, List<string[]> similarityDataTable)
         {
-            string outputDirectory = Path.GetDirectoryName(outputfilePath);
-            if (!Directory.Exists(outputDirectory))
-            {
-                Directory.CreateDirectory(outputDirectory);
-            }
+            
             using (var writer = new StreamWriter(outputfilePath))
             {
                 foreach (var row in similarityDataTable)
@@ -24,6 +20,37 @@ namespace MySemanticAnalysisSample.FileHandling
                     writer.WriteLine(string.Join(",", row));
                 }
             }
+        }
+
+        public static void WriteEmbeddingsToCSV(string outputfilePath, Dictionary<string, float[]> embeddings, bool isDocument)
+        {
+            if(!isDocument)
+            {
+                using (var writer = new StreamWriter(outputfilePath))
+                {   
+                    var firstRow = new List<string>();
+                    var index = embeddings.Values.First().Length;
+                    firstRow.Add("Categories");
+                    for (int i = 0; i < index; i++)
+                    {
+                        firstRow.Add(i.ToString());
+                    }
+                    writer.WriteLine(string.Join(",", firstRow));                       
+
+                    foreach (var row in embeddings)
+                    {
+                        var csvRow = new List<string>();
+                        csvRow.Add(row.Key);
+                        foreach (var num in row.Value)
+                        {
+                            csvRow.Add(num.ToString());
+                        }
+                        writer.WriteLine(string.Join(",", csvRow));
+                    }
+                }
+                Console.WriteLine("Embeddings successfully written to " + outputfilePath);
+            }
+           
         }
     }
 }

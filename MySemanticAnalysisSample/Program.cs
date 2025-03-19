@@ -58,21 +58,12 @@ namespace MySemanticAnalysisSample
                     similarityDataTable = await CompareDocsWithDocsAsync(config);
                 }
 
-                string outputCSVPath = config["outputCSVPath"];
+                string outputCSVPath = config["Output:outputSimilarityCSVPath"];
+                outputCSVPath = FilePathValidator.ValidateOutputFilePath(outputCSVPath, "similarity_result.csv");               
+                CSVWriter.WriteSimilarityToCSV(outputCSVPath, similarityDataTable);
+                Console.WriteLine($"Similarity data successfully written to: {outputCSVPath}");
 
-                if (string.IsNullOrEmpty(outputCSVPath) || !Directory.Exists(Path.GetDirectoryName(outputCSVPath)))
-                {
-                    string outputFolder = AppContext.BaseDirectory; // Default: Same folder as the app
-                    string outputFilePath = Path.Combine(outputFolder, "similarity_result.csv");
-                    CSVWriter.WriteToCSV(outputFilePath, similarityDataTable);
-                    Console.WriteLine($"Similarity data successfully written to: {outputFilePath}");
                 }
-                else
-                {
-                    CSVWriter.WriteToCSV(outputCSVPath, similarityDataTable);
-                    Console.WriteLine($"Similarity data successfully written to: {outputCSVPath}");
-                }
-            }
             catch (Exception ex)
             {
                 Console.WriteLine($"An error occurred: {ex.GetType().Name} - {ex.Message}");
@@ -105,7 +96,15 @@ namespace MySemanticAnalysisSample
             var queryEmbeddingDictionary = await embeddingGenerator.EmbedWordsListAsync(processedQueryWords);
             var referenceEmbeddingDictionary = await embeddingGenerator.EmbedWordsListAsync(processedReferenceWords);
 
+            var outputQueryEmbeddingCSVPath = config["Output:queryEmbeddingCSVPath"];
+            outputQueryEmbeddingCSVPath = FilePathValidator.ValidateOutputFilePath(outputQueryEmbeddingCSVPath, "query_embeddings.csv");
+            CSVWriter.WriteEmbeddingsToCSV(outputQueryEmbeddingCSVPath, queryEmbeddingDictionary, false);
                 
+            var outputReferenceEmbeddingsCSVPath = config["Output:referenceEmbeddingCSVPath"];
+            outputReferenceEmbeddingsCSVPath = FilePathValidator.ValidateOutputFilePath(outputReferenceEmbeddingsCSVPath, "reference_embeddings.csv");
+            CSVWriter.WriteEmbeddingsToCSV(outputReferenceEmbeddingsCSVPath, referenceEmbeddingDictionary, false);
+
+
             var similarityDataTable = new List<string[]>();
             var similarityDataTableFirstRow = new List<string>();
             similarityDataTableFirstRow.Add("   ");
