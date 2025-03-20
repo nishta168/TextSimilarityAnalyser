@@ -3,8 +3,22 @@ using MySemanticAnalysisSample.SimilarityCalculation;
 
 namespace MySemanticAnalysisSample.SimilarityCalculation
 {
+    /// <summary>
+    /// Calculates similarity of embedding vectors using cosine similarity
+    /// </summary>
     internal class CosineSimilarityCalculator : ISimilarityCalculator
     {
+        /// <summary>
+        /// Computes the cosine similarity between two embedding vectors.
+        /// Cosine similarity measures the cosine of the angle between two vectors,
+        /// giving a value between -1 (opposite) and 1 (identical).
+        /// </summary>
+        /// <param name="embedding1">First embedding vector.</param>
+        /// <param name="embedding2">Second embedding vector.</param>
+        /// <returns>Cosine similarity score between -1 and 1.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if either embedding is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if embeddings have different lengths.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the magnitude of any vector is zero.</exception>
         public float CalculateSimilarity(float[] embedding1, float[] embedding2)
         {
             if (embedding1 == null || embedding2 == null)

@@ -3,26 +3,28 @@ using MySemanticAnalysisSample.FileHandling;
 using MySemanticAnalysisSample.Preprocessing;
 using MySemanticAnalysisSample.SimilarityCalculation;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.Json;
 using System.Data;
-using System.Reflection.Metadata;
 using MySemanticAnalysisSample.Utils;
 
 namespace MySemanticAnalysisSample
 {
+    /// <summary>
+    /// Loads configuration, validates the mode chosen by user, executes the appropriate comparison method and writes output to csv files.
+    /// </summary>
     internal class Program
     {
-        
         static async Task Main(string[] args)
         {
             Console.WriteLine("Welcome to Text Similarity Analyser");
+
             var config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true) // Load from appsettings.json
-                .AddEnvironmentVariables() // Load from environment variables
-                .AddCommandLine(args) // Load from command-line arguments
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables()
+                .AddCommandLine(args)
                 .Build();
 
-            var mode = config["mode"]?.ToLower(); // Convert to lowercase for case-insensitive comparison
+            //read and validate user selected mode
+            var mode = config["mode"]?.ToLower();
 
             var validModes = new HashSet<string>
             {
@@ -38,13 +40,10 @@ namespace MySemanticAnalysisSample
                 return;
             }
 
-            Console.WriteLine($"Selected mode: {mode}");
-            
-
             var similarityDataTable = new List<string[]>();
 
-            try 
-            { 
+            try
+            {
                 // Call the appropriate method based on the mode
                 if (mode == "comparewordswithwords")
                 {
@@ -60,10 +59,10 @@ namespace MySemanticAnalysisSample
                 }
 
                 string outputCSVPath = config["Output:similarityCSVPath"];
-                outputCSVPath = FilePathValidator.ValidateOutputFilePath(outputCSVPath, "similarity_result.csv");               
+                outputCSVPath = FilePathValidator.ValidateOutputFilePath(outputCSVPath, "similarity_result.csv");
                 CSVWriter.WriteSimilarityToCSV(outputCSVPath, similarityDataTable);
                 Console.WriteLine($"Similarity data successfully written to: {outputCSVPath}");
-                
+
             }
             catch (Exception ex)
             {
@@ -75,44 +74,53 @@ namespace MySemanticAnalysisSample
 
         }
 
+        /// <summary>
+        /// Compares a list of query words/phrases with a list of reference words/phrases and provides the embedding values and similarity results.
+        /// </summary>
+        /// <param name="config">Application configuration</param>
+        /// <returns>A list of string arrays representing the similarity table, where the first row contains reference words/phrases, the first column contains query words/phrases, and the remaining cells contain their similarity scores.</returns>
+        /// <exception cref="InvalidOperationException"></exception>
         static async Task<List<string[]>> CompareWordsWithWordsAsync(IConfiguration config)
         {
+            Console.WriteLine("Selected mode: Compare Words/Phrases with Words/Phrases");
+
+            // Read and validate input file paths
             string queryWordsPath = config["Input:queryWordsPath"];
             string referenceWordsPath = config["Input:referenceWordsPath"];
-
             FilePathValidator.ValidateTxtFilePath(queryWordsPath);
-            FilePathValidator.ValidateTxtFilePath(referenceWordsPath);            
+            FilePathValidator.ValidateTxtFilePath(referenceWordsPath);
 
+            // Read words/phrases from files
             var queryWordsReader = new FileReader(queryWordsPath);
             var queryWords = queryWordsReader.ReadWordsOrPhrases();
-
             var referenceWordsReader = new FileReader(referenceWordsPath);
             var referenceWords = referenceWordsReader.ReadWordsOrPhrases();
-                
+
+            // Preprocess words/phrases
             var processor = new TextProcessor();
             var processedQueryWords = processor.ProcessWordOrPhraseList(queryWords);
             var processedReferenceWords = processor.ProcessWordOrPhraseList(referenceWords);
 
-            var embeddingGenerator = new ChatGPTEmbeddingGenerator(config);          
+            // Generate embeddings
+            var embeddingGenerator = new ChatGPTEmbeddingGenerator(config);
             var queryEmbeddingDictionary = await embeddingGenerator.EmbedWordsListAsync(processedQueryWords);
             var referenceEmbeddingDictionary = await embeddingGenerator.EmbedWordsListAsync(processedReferenceWords);
 
+            //write embeddings to csv files for scalar value visualisation
             var outputQueryEmbeddingCSVPath = config["Output:queryEmbeddingCSVPath"];
             outputQueryEmbeddingCSVPath = FilePathValidator.ValidateOutputFilePath(outputQueryEmbeddingCSVPath, "query_embeddings.csv");
             CSVWriter.WriteEmbeddingsToCSV(outputQueryEmbeddingCSVPath, queryEmbeddingDictionary);
-
             var outputReferenceEmbeddingsCSVPath = config["Output:referenceEmbeddingCSVPath"];
             outputReferenceEmbeddingsCSVPath = FilePathValidator.ValidateOutputFilePath(outputReferenceEmbeddingsCSVPath, "reference_embeddings.csv");
             CSVWriter.WriteEmbeddingsToCSV(outputReferenceEmbeddingsCSVPath, referenceEmbeddingDictionary);
 
-
+            //creating similarity table
             var similarityDataTable = new List<string[]>();
-            var similarityDataTableFirstRow = new List<string>();
-            similarityDataTableFirstRow.Add("Q\\R");
-                
+            var similarityDataTableFirstRow = new List<string> { "Q\\R" };
+
             foreach (var reference in referenceEmbeddingDictionary)
-            {                  
-                similarityDataTableFirstRow.Add(reference.Key); 
+            {
+                similarityDataTableFirstRow.Add(reference.Key);
             }
 
             similarityDataTable.Add(similarityDataTableFirstRow.ToArray());
@@ -124,9 +132,7 @@ namespace MySemanticAnalysisSample
 
             foreach (var query in queryEmbeddingDictionary)
             {
-
-                var similarityDataTableRow = new List<string>();
-                similarityDataTableRow.Add(query.Key);
+                var similarityDataTableRow = new List<string> { query.Key };
 
                 foreach (var reference in referenceEmbeddingDictionary)
                 {
@@ -143,134 +149,142 @@ namespace MySemanticAnalysisSample
             }
 
             return similarityDataTable;
-
         }
 
+        /// <summary>
+        /// Compares a list of query documents with a list of query words/phrases and provides the embedding values and similarity results.
+        /// </summary>
+        /// <param name="config">Application configuration</param>
+        /// <returns>A list of string arrays representing the similarity table, where the first row contains reference words/phrases, the first column contains query documents, and the remaining cells contain their similarity scores.</returns>
         static async Task<List<string[]>> CompareDocsWithWordsAsync(IConfiguration config)
         {
+            Console.WriteLine("Selected mode: Compare Documents with Words/Phrases");
 
+            // Read and validate input file paths
             string queryDocumentsPath = config["Input:queryDocumentsPath"];
             string referenceWordsPath = config["Input:referenceWordsPath"];
-
             FilePathValidator.ValidateDocumentsFolderPath(queryDocumentsPath);
-            FilePathValidator.ValidateTxtFilePath(referenceWordsPath);         
-            
+            FilePathValidator.ValidateTxtFilePath(referenceWordsPath);
 
+            // Read reference words/phrases and query documents 
             var queryDocsReader = new FileReader(queryDocumentsPath);
             var queryDocs = queryDocsReader.ReadDocuments();
-
             var referenceWordsReader = new FileReader(referenceWordsPath);
-            var referenceWords = referenceWordsReader.ReadWordsOrPhrases();            
+            var referenceWords = referenceWordsReader.ReadWordsOrPhrases();
 
+            // Preprocess documents and words
             var processor = new TextProcessor();
             var processedQueryDocs = processor.ProcessDocumentList(queryDocs, true);
             var processedReferenceWords = processor.ProcessWordOrPhraseList(referenceWords);
 
+            // Generate embeddings
             var embeddingGenerator = new ChatGPTEmbeddingGenerator(config);
             var queryEmbeddingDictionary = await embeddingGenerator.EmbedDocumentsListAsync(processedQueryDocs);
             var referenceEmbeddingDictionary = await embeddingGenerator.EmbedWordsListAsync(processedReferenceWords);
 
+            //write embeddings to csv files for scalar value visualisation
             var outputQueryEmbeddingCSVPath = config["Output:queryEmbeddingCSVPath"];
             outputQueryEmbeddingCSVPath = FilePathValidator.ValidateOutputFilePath(outputQueryEmbeddingCSVPath, "query_embeddings.csv");
             CSVWriter.WriteEmbeddingsToCSV(outputQueryEmbeddingCSVPath, queryEmbeddingDictionary);
-
             var outputReferenceEmbeddingsCSVPath = config["Output:referenceEmbeddingCSVPath"];
             outputReferenceEmbeddingsCSVPath = FilePathValidator.ValidateOutputFilePath(outputReferenceEmbeddingsCSVPath, "reference_embeddings.csv");
             CSVWriter.WriteEmbeddingsToCSV(outputReferenceEmbeddingsCSVPath, referenceEmbeddingDictionary);
 
+            //creating similarity table
             var similarityDataTable = new List<string[]>();
-            var similarityDataTableFirstRow = new List<string>();
-            similarityDataTableFirstRow.Add("Q\\R");
+            var similarityDataTableFirstRow = new List<string> { "Q\\R" };
+
+            foreach (var reference in referenceEmbeddingDictionary)
+            {
+                similarityDataTableFirstRow.Add(reference.Key);
+            }
+
+            similarityDataTable.Add(similarityDataTableFirstRow.ToArray());
+
+            var similarityCalculator = new CosineSimilarityCalculator();
+            const float beta = 50.0f; // Adjust beta to control weighting (higher → stronger bias toward large values)
+
+            foreach (var query in queryEmbeddingDictionary)
+            {
+                var similarityDataTableRow = new List<string>();
+                similarityDataTableRow.Add(query.Key);
 
                 foreach (var reference in referenceEmbeddingDictionary)
                 {
-                    similarityDataTableFirstRow.Add(reference.Key);
-                }
-
-                similarityDataTable.Add(similarityDataTableFirstRow.ToArray());
-
-                var similarityCalculator = new CosineSimilarityCalculator();
-                const float beta = 50.0f; // Adjust beta to control weighting (higher → stronger bias toward large values)
-
-
-                foreach (var query in queryEmbeddingDictionary)
-                {
-                    var similarityDataTableRow = new List<string>();
-                    similarityDataTableRow.Add(query.Key);
-
-                    foreach (var reference in referenceEmbeddingDictionary)
+                    var similarities = new List<float>();
+                    foreach (var embedding in query.Value)
                     {
-                        var similarities = new List<float>();
-                        foreach (var embedding in query.Value)
-                        {
-                            var sim = similarityCalculator.CalculateSimilarity(embedding, reference.Value);
-                            similarities.Add(sim);
-                        }
-
-                        //Exponential Weighted Mean Calculation
-                        var expWeights = similarities.Select(x => (float)Math.Exp(beta * x)).ToList(); //address very high values later 
-                        float weightedSum = similarities.Zip(expWeights, (sim, weight) => sim * weight).Sum();
-                        float weightSum = expWeights.Sum();
-                        float weightedSimilarity = weightSum != 0 ? weightedSum / weightSum : 0; // Avoid division by zero
-
-
-                        similarityDataTableRow.Add(weightedSimilarity.ToString());
+                        var sim = similarityCalculator.CalculateSimilarity(embedding, reference.Value);
+                        similarities.Add(sim);
                     }
 
+                    //Exponential Weighted Mean Calculation
+                    var expWeights = similarities.Select(x => (float)Math.Exp(beta * x)).ToList(); //address very high values later 
+                    float weightedSum = similarities.Zip(expWeights, (sim, weight) => sim * weight).Sum();
+                    float weightSum = expWeights.Sum();
+                    float weightedSimilarity = weightSum != 0 ? weightedSum / weightSum : 0; // Avoid division by zero
 
-                    similarityDataTable.Add(similarityDataTableRow.ToArray());
 
+                    similarityDataTableRow.Add(weightedSimilarity.ToString());
                 }
+
+                similarityDataTable.Add(similarityDataTableRow.ToArray());
+
+            }
             if (similarityDataTable.Count < 2)
             {
                 throw new InvalidOperationException("Error in calculating similarities");
             }
 
             return similarityDataTable;
+        }
 
-
-        }          
-
-
-        
+        /// <summary>
+        /// Compares a list of query documents with a list of reference documents and provides the embedding values and similarity results.
+        /// </summary>
+        /// <param name="config">Application configuration</param>
+        /// <returns>A list of string arrays representing the similarity table, where the first row contains reference documents, the first column contains query documents, and the remaining cells contain their similarity scores.</returns>
         static async Task<List<string[]>> CompareDocsWithDocsAsync(IConfiguration config)
         {
+            Console.WriteLine("Selected mode: Compare Documents with Documents");
+
+            // Read and validate input file paths
             string queryDocumentsPath = config["Input:queryDocumentsPath"];
             string referenceDocumentsPath = config["Input:referenceDocumentsPath"];
-
             FilePathValidator.ValidateDocumentsFolderPath(queryDocumentsPath);
-            FilePathValidator.ValidateDocumentsFolderPath(referenceDocumentsPath);          
+            FilePathValidator.ValidateDocumentsFolderPath(referenceDocumentsPath);
 
+            // Read documents from folders
             var queryDocsReader = new FileReader(queryDocumentsPath);
             var queryDocs = queryDocsReader.ReadDocuments();
-
             var referenceDocsReader = new FileReader(referenceDocumentsPath);
-            var referenceDocs = referenceDocsReader.ReadDocuments();            
-               
-            var processor = new TextProcessor();
-            var embeddingGenerator = new ChatGPTEmbeddingGenerator(config);
+            var referenceDocs = referenceDocsReader.ReadDocuments();
 
+            // Preprocess documents   
+            var processor = new TextProcessor();
             var processedQueryDocs = processor.ProcessDocumentList(queryDocs, false);
             var processedReferenceDocs = processor.ProcessDocumentList(referenceDocs, false);
 
+            // Generate embeddings
+            var embeddingGenerator = new ChatGPTEmbeddingGenerator(config);
             var queryEmbeddingDictionary = await embeddingGenerator.EmbedDocumentsListAsync(processedQueryDocs);
             var referenceEmbeddingDictionary = await embeddingGenerator.EmbedDocumentsListAsync(processedReferenceDocs);
 
+            // Calculate mean of embeddings where document size exceeds max token limit
             var queryDictionary = Helper.CalculateMeanEmbedding(queryEmbeddingDictionary);
             var refDictionary = Helper.CalculateMeanEmbedding(referenceEmbeddingDictionary);
 
+            // Write embeddings to csv file to visualise scalar values 
             var outputQueryEmbeddingCSVPath = config["Output:queryEmbeddingCSVPath"];
             outputQueryEmbeddingCSVPath = FilePathValidator.ValidateOutputFilePath(outputQueryEmbeddingCSVPath, "query_embeddings.csv");
             CSVWriter.WriteEmbeddingsToCSV(outputQueryEmbeddingCSVPath, queryDictionary);
-
             var outputReferenceEmbeddingsCSVPath = config["Output:referenceEmbeddingCSVPath"];
             outputReferenceEmbeddingsCSVPath = FilePathValidator.ValidateOutputFilePath(outputReferenceEmbeddingsCSVPath, "reference_embeddings.csv");
             CSVWriter.WriteEmbeddingsToCSV(outputReferenceEmbeddingsCSVPath, refDictionary);
 
-
+            // Creating similarity table
             var similarityDataTable = new List<string[]>();
-            var similarityDataTableFirstRow = new List<string>();
-            similarityDataTableFirstRow.Add("Q\\R");
+            var similarityDataTableFirstRow = new List<string> { "Q\\R" };
 
             foreach (var reference in refDictionary)
             {
@@ -301,9 +315,6 @@ namespace MySemanticAnalysisSample
             }
 
             return similarityDataTable;
-
-        }    
-
-                
+        }
     }
 }

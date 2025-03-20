@@ -4,8 +4,22 @@ using System.Linq;
 
 namespace MySemanticAnalysisSample.SimilarityCalculation
 {
+    /// <summary>
+    /// Computes the Jaccard similarity between two embedding vectors.
+    /// Jaccard similarity measures the overlap between two sets, 
+    /// calculated as the ratio of the intersection size to the union size.
+    /// </summary>
     internal class JaccardSimilarityCalculator : ISimilarityCalculator
     {
+        /// <summary>
+        /// Calculates the Jaccard similarity between two embedding vectors.
+        /// Treats non-zero values in the embeddings as set elements.
+        /// </summary>
+        /// <param name="embedding1">First embedding vector.</param>
+        /// <param name="embedding2">Second embedding vector.</param>
+        /// <returns>Jaccard similarity score between 0 and 1.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if either embedding is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if embeddings have different lengths.</exception>
         public float CalculateSimilarity(float[] embedding1, float[] embedding2)
         {
             if (embedding1 == null || embedding2 == null)

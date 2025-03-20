@@ -6,8 +6,17 @@ using System.Threading.Tasks;
 
 namespace MySemanticAnalysisSample.FileHandling
 {
+    /// <summary>
+    /// Provides methods to validate user given file paths and directory paths.
+    /// </summary>
     internal static class FilePathValidator
     {
+        /// <summary>
+        /// Validates whether a valid .txt file is given by user when comparing words/phrases
+        /// </summary>
+        /// <param name="filePath">Input file path extracted from config</param>
+        /// <exception cref="ArgumentException">Thrown if the input file path is not provided via config or not a .txt file. </exception>
+        /// <exception cref="FileNotFoundException">Thrown if the provided path doesn't exist.</exception>
         public static void ValidateTxtFilePath(string filePath)
         {
             if (string.IsNullOrEmpty(filePath))
@@ -18,16 +27,23 @@ namespace MySemanticAnalysisSample.FileHandling
 
             if (!File.Exists(filePath))
             {
-                throw new FileNotFoundException($"Words file not found: {filePath}");           
-            }                      
+                throw new FileNotFoundException($"Words file not found: {filePath}");
+            }
 
             if (Path.GetExtension(filePath).ToLower() != ".txt")
             {
                 throw new ArgumentException($"Invalid words file format. Expected .txt, found: {filePath}");
             }
-           
+
         }
 
+        /// <summary>
+        /// Validates that the user has input a folder containing .txt files when comparing documents.
+        /// </summary>
+        /// <param name="folderPath">Folder path containing documents extracted from config. </param>
+        /// <exception cref="ArgumentException">Thrown if the folder path in not provided via config.</exception>
+        /// <exception cref="DirectoryNotFoundException">Thrown if the path provided doesn't exist.</exception>
+        /// <exception cref="FileNotFoundException">Thrown if there are no .txt documents inside the folder.</exception>
         public static void ValidateDocumentsFolderPath(string folderPath)
         {
             if (string.IsNullOrEmpty(folderPath))
@@ -50,19 +66,27 @@ namespace MySemanticAnalysisSample.FileHandling
 
         }
 
+        /// <summary>
+        /// Returns the user provided output paths if it is valid. Otherwise returns a default output file path.
+        /// </summary>
+        /// <param name="filePath">File path extracted from config.</param>
+        /// <param name="fileName">The default file name if no valid path is provided.</param>
+        /// <returns>A valid file path where output can be written.</returns>
         public static string ValidateOutputFilePath(string filePath, string fileName)
         {
             if (Path.Exists(filePath))
             {
-                return filePath; 
+                // Return the valid existing file path
+                return filePath;
             }
             else
             {
-                string outputFolder = AppContext.BaseDirectory; // Default: Same folder as the app
+                // Default: Same folder as the app
+                string outputFolder = AppContext.BaseDirectory;
                 string outputFilePath = Path.Combine(outputFolder, fileName);
+                Console.WriteLine("Output file path not provided for " + fileName + ". Writing to default location.");
                 return outputFilePath;
             }
-
         }
     }
 }
