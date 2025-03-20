@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using System.Data;
 using System.Reflection.Metadata;
+using MySemanticAnalysisSample.Utils;
 
 namespace MySemanticAnalysisSample
 {
@@ -58,12 +59,12 @@ namespace MySemanticAnalysisSample
                     similarityDataTable = await CompareDocsWithDocsAsync(config);
                 }
 
-                string outputCSVPath = config["Output:outputSimilarityCSVPath"];
+                string outputCSVPath = config["Output:similarityCSVPath"];
                 outputCSVPath = FilePathValidator.ValidateOutputFilePath(outputCSVPath, "similarity_result.csv");               
                 CSVWriter.WriteSimilarityToCSV(outputCSVPath, similarityDataTable);
                 Console.WriteLine($"Similarity data successfully written to: {outputCSVPath}");
-
-                }
+                
+            }
             catch (Exception ex)
             {
                 Console.WriteLine($"An error occurred: {ex.GetType().Name} - {ex.Message}");
@@ -76,8 +77,8 @@ namespace MySemanticAnalysisSample
 
         static async Task<List<string[]>> CompareWordsWithWordsAsync(IConfiguration config)
         {
-            string queryWordsPath = config["queryWordsPath"];
-            string referenceWordsPath = config["referenceWordsPath"];
+            string queryWordsPath = config["Input:queryWordsPath"];
+            string referenceWordsPath = config["Input:referenceWordsPath"];
 
             FilePathValidator.ValidateTxtFilePath(queryWordsPath);
             FilePathValidator.ValidateTxtFilePath(referenceWordsPath);            
@@ -98,16 +99,16 @@ namespace MySemanticAnalysisSample
 
             var outputQueryEmbeddingCSVPath = config["Output:queryEmbeddingCSVPath"];
             outputQueryEmbeddingCSVPath = FilePathValidator.ValidateOutputFilePath(outputQueryEmbeddingCSVPath, "query_embeddings.csv");
-            CSVWriter.WriteEmbeddingsToCSV(outputQueryEmbeddingCSVPath, queryEmbeddingDictionary, false);
-                
+            CSVWriter.WriteEmbeddingsToCSV(outputQueryEmbeddingCSVPath, queryEmbeddingDictionary);
+
             var outputReferenceEmbeddingsCSVPath = config["Output:referenceEmbeddingCSVPath"];
             outputReferenceEmbeddingsCSVPath = FilePathValidator.ValidateOutputFilePath(outputReferenceEmbeddingsCSVPath, "reference_embeddings.csv");
-            CSVWriter.WriteEmbeddingsToCSV(outputReferenceEmbeddingsCSVPath, referenceEmbeddingDictionary, false);
+            CSVWriter.WriteEmbeddingsToCSV(outputReferenceEmbeddingsCSVPath, referenceEmbeddingDictionary);
 
 
             var similarityDataTable = new List<string[]>();
             var similarityDataTableFirstRow = new List<string>();
-            similarityDataTableFirstRow.Add("   ");
+            similarityDataTableFirstRow.Add("Q\\R");
                 
             foreach (var reference in referenceEmbeddingDictionary)
             {                  
@@ -148,8 +149,8 @@ namespace MySemanticAnalysisSample
         static async Task<List<string[]>> CompareDocsWithWordsAsync(IConfiguration config)
         {
 
-            string queryDocumentsPath = config["queryDocumentsPath"];
-            string referenceWordsPath = config["referenceWordsPath"];
+            string queryDocumentsPath = config["Input:queryDocumentsPath"];
+            string referenceWordsPath = config["Input:referenceWordsPath"];
 
             FilePathValidator.ValidateDocumentsFolderPath(queryDocumentsPath);
             FilePathValidator.ValidateTxtFilePath(referenceWordsPath);         
@@ -169,9 +170,17 @@ namespace MySemanticAnalysisSample
             var queryEmbeddingDictionary = await embeddingGenerator.EmbedDocumentsListAsync(processedQueryDocs);
             var referenceEmbeddingDictionary = await embeddingGenerator.EmbedWordsListAsync(processedReferenceWords);
 
+            var outputQueryEmbeddingCSVPath = config["Output:queryEmbeddingCSVPath"];
+            outputQueryEmbeddingCSVPath = FilePathValidator.ValidateOutputFilePath(outputQueryEmbeddingCSVPath, "query_embeddings.csv");
+            CSVWriter.WriteEmbeddingsToCSV(outputQueryEmbeddingCSVPath, queryEmbeddingDictionary);
+
+            var outputReferenceEmbeddingsCSVPath = config["Output:referenceEmbeddingCSVPath"];
+            outputReferenceEmbeddingsCSVPath = FilePathValidator.ValidateOutputFilePath(outputReferenceEmbeddingsCSVPath, "reference_embeddings.csv");
+            CSVWriter.WriteEmbeddingsToCSV(outputReferenceEmbeddingsCSVPath, referenceEmbeddingDictionary);
+
             var similarityDataTable = new List<string[]>();
             var similarityDataTableFirstRow = new List<string>();
-            similarityDataTableFirstRow.Add("    ");
+            similarityDataTableFirstRow.Add("Q\\R");
 
                 foreach (var reference in referenceEmbeddingDictionary)
                 {
@@ -220,28 +229,23 @@ namespace MySemanticAnalysisSample
             return similarityDataTable;
 
 
-        }
-            
+        }          
 
 
         
-
         static async Task<List<string[]>> CompareDocsWithDocsAsync(IConfiguration config)
         {
-            string queryDocumentsPath = config["queryDocumentsPath"];
-            string referenceDocumentsPath = config["referenceDocumentsPath"];
+            string queryDocumentsPath = config["Input:queryDocumentsPath"];
+            string referenceDocumentsPath = config["Input:referenceDocumentsPath"];
 
             FilePathValidator.ValidateDocumentsFolderPath(queryDocumentsPath);
-            FilePathValidator.ValidateTxtFilePath(referenceDocumentsPath);          
+            FilePathValidator.ValidateDocumentsFolderPath(referenceDocumentsPath);          
 
             var queryDocsReader = new FileReader(queryDocumentsPath);
             var queryDocs = queryDocsReader.ReadDocuments();
 
             var referenceDocsReader = new FileReader(referenceDocumentsPath);
-            var referenceDocs = referenceDocsReader.ReadDocuments();
-
-
-            
+            var referenceDocs = referenceDocsReader.ReadDocuments();            
                
             var processor = new TextProcessor();
             var embeddingGenerator = new ChatGPTEmbeddingGenerator(config);
@@ -252,13 +256,21 @@ namespace MySemanticAnalysisSample
             var queryEmbeddingDictionary = await embeddingGenerator.EmbedDocumentsListAsync(processedQueryDocs);
             var referenceEmbeddingDictionary = await embeddingGenerator.EmbedDocumentsListAsync(processedReferenceDocs);
 
-            var queryDictionary = CalculateMeanEmbedding(queryEmbeddingDictionary);
-            var refDictionary = CalculateMeanEmbedding(referenceEmbeddingDictionary);
+            var queryDictionary = Helper.CalculateMeanEmbedding(queryEmbeddingDictionary);
+            var refDictionary = Helper.CalculateMeanEmbedding(referenceEmbeddingDictionary);
+
+            var outputQueryEmbeddingCSVPath = config["Output:queryEmbeddingCSVPath"];
+            outputQueryEmbeddingCSVPath = FilePathValidator.ValidateOutputFilePath(outputQueryEmbeddingCSVPath, "query_embeddings.csv");
+            CSVWriter.WriteEmbeddingsToCSV(outputQueryEmbeddingCSVPath, queryDictionary);
+
+            var outputReferenceEmbeddingsCSVPath = config["Output:referenceEmbeddingCSVPath"];
+            outputReferenceEmbeddingsCSVPath = FilePathValidator.ValidateOutputFilePath(outputReferenceEmbeddingsCSVPath, "reference_embeddings.csv");
+            CSVWriter.WriteEmbeddingsToCSV(outputReferenceEmbeddingsCSVPath, refDictionary);
 
 
             var similarityDataTable = new List<string[]>();
             var similarityDataTableFirstRow = new List<string>();
-            similarityDataTableFirstRow.Add("    ");
+            similarityDataTableFirstRow.Add("Q\\R");
 
             foreach (var reference in refDictionary)
             {
@@ -290,30 +302,8 @@ namespace MySemanticAnalysisSample
 
             return similarityDataTable;
 
-        }         
+        }    
 
-        
-
-        static Dictionary<string, float[]> CalculateMeanEmbedding (Dictionary<string, List<float[]>> embDictionary)
-        {
-            var dictionary = new Dictionary<string, float[]>();
-
-            foreach (var doc in embDictionary)
-            {
-                if (doc.Value.Count > 0)
-                {
-                    int embeddingSize = doc.Value[0].Length;
-                    var avgEmbedding = new float[embeddingSize];
-
-                    for (int i = 0; i < embeddingSize; i++)
-                    {
-                        avgEmbedding[i] = doc.Value.Average(e => e[i]);
-                    }
-
-                    dictionary.Add(doc.Key, avgEmbedding);
-                }
-            }
-            return dictionary;
-        }
+                
     }
 }

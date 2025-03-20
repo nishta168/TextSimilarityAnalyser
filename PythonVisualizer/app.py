@@ -98,16 +98,19 @@ def update_graph(selected_refs):
 
     if len(selected_refs) == 1:
         fig = px.bar(filtered_df, x="Query", y=selected_refs[0], title="Comparison of Similarity Scores for 1 Reference",color=selected_refs[0], color_continuous_scale="Blues",)
+        fig.update_layout(yaxis=dict(range=[0, 1]))
         return fig
     elif len(selected_refs) > 3:
         melted_df = filtered_df.melt(id_vars=["Query"], var_name="Reference", value_name="Similarity")
         fig = px.bar(melted_df, x="Query", y="Similarity", color="Reference", title="Comparison of Similarity Scores for 3+ References", barmode="group", color_discrete_sequence=px.colors.qualitative.Set1 )
+        fig.update_layout(yaxis=dict(range=[0, 1]))
         return fig
     elif len(selected_refs) == 2:
         fig = px.scatter(filtered_df, x=selected_refs[0], y=selected_refs[1], title="Comparison of Similarity Scores for 2 References", hover_data=hover_data, color="Query")
     elif len(selected_refs) == 3:
         fig = px.scatter_3d(filtered_df, x=selected_refs[0], y=selected_refs[1], z=selected_refs[2], title="Comparison of Similarity Scores for 3 References", hover_data=hover_data, color="Query")
-
+    
+    fig.update_layout(yaxis=dict(range=[0, 1]))
     fig.update_traces(marker=dict(size=12, opacity=0.7))  # Set all dots to size 10
 
     return fig
@@ -130,6 +133,7 @@ def update_embedding_graph(selected_query, selected_reference):
                       title=f"Embedding Vector for {selected_reference}",
                       labels={"x": "Dimension", "y": "Embedding Value"},
                       markers=True)
+        fig.update_layout(yaxis=dict(range=[-1, 1]))        
         fig.update_traces(line=dict(color='blue', width=2), marker=dict(size=8))
         return fig
 
@@ -142,6 +146,7 @@ def update_embedding_graph(selected_query, selected_reference):
                       title=f"Embedding Vector for {selected_query}",
                       labels={"x": "Dimension", "y": "Embedding Value"},
                       markers=True)
+        fig.update_layout(yaxis=dict(range=[-1, 1]))      
         fig.update_traces(line=dict(color='red', width=2), marker=dict(size=8))
         return fig    
 
@@ -168,6 +173,8 @@ def update_embedding_graph(selected_query, selected_reference):
         showarrow=False, font=dict(size=14, color="black"),
         xref="paper", yref="paper"
     )
+    
+    fig.update_layout(yaxis=dict(range=[-1, 1]))        
 
     return fig
 
