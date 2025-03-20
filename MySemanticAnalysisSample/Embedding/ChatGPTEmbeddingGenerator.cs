@@ -6,7 +6,7 @@ namespace MySemanticAnalysisSample.Embedding
     /// <summary>
     /// Implementation of IEmbeddingGenerator using OpenAI's Embedding API.
     /// </summary>
-    internal class ChatGPTEmbeddingGenerator: IEmbeddingGenerator
+    internal class ChatGPTEmbeddingGenerator : IEmbeddingGenerator
     {
         private readonly EmbeddingClient _client;
 
@@ -16,9 +16,9 @@ namespace MySemanticAnalysisSample.Embedding
         public ChatGPTEmbeddingGenerator(IConfiguration config)
         {
             string apiKey = config["OpenAI:apiKey"] ?? throw new ArgumentException("Missing OpenAI API Key in configuration.");
-            string embeddingModel = config["OpenAI:EmbeddingModel"] ?? throw new ArgumentException("Missing OpenAI embedding model in configuration.");          
-            
-            if(string.IsNullOrEmpty(apiKey))
+            string embeddingModel = config["OpenAI:EmbeddingModel"] ?? throw new ArgumentException("Missing OpenAI embedding model in configuration.");
+
+            if (string.IsNullOrEmpty(apiKey))
             {
                 throw new ArgumentException("OpenAI API Key cannot be an empty string. Please provide valid API Key in configuration file");
             }
@@ -26,13 +26,13 @@ namespace MySemanticAnalysisSample.Embedding
             {
                 throw new ArgumentException("Please provide embedding model in configuration");
             }
-            if(!ValidateOpenAIKey(apiKey, embeddingModel))
+            if (!ValidateOpenAIKey(apiKey, embeddingModel))
             {
                 throw new ArgumentException("Invalid OpenAI API Key");
             }
 
             _client = new EmbeddingClient(embeddingModel, apiKey);
-            
+
         }
 
         /// <summary>
@@ -43,8 +43,8 @@ namespace MySemanticAnalysisSample.Embedding
         public async Task<Dictionary<string, List<float[]>>> EmbedDocumentsListAsync(Dictionary<string, List<string>> documents)
         {
             var embeddingsDictionary = new Dictionary<string, List<float[]>>();
-           
-            foreach ( var document in documents)
+
+            foreach (var document in documents)
             {
                 var chunks = document.Value;
                 var chunkEmbeddings = new List<float[]>();
@@ -109,8 +109,8 @@ namespace MySemanticAnalysisSample.Embedding
             for (int i = 0; i < words.Count; i++)
             {
                 embeddingsDictionary[words[i]] = embeddingResults[i].ToFloats().ToArray();
-            }          
-            
+            }
+
             return embeddingsDictionary;
         }
 
