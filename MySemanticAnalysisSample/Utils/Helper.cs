@@ -36,5 +36,21 @@ namespace MySemanticAnalysisSample.Utils
             return dictionary;
         }
 
+        /// <summary>
+        /// Computes the exponentially weighted mean of a list of similarity values.  
+        /// Higher similarity values receive greater weight, emphasizing higher impact of highly matching text chunks  
+        /// while minimizing the influence of non-matching chunks.
+        /// </summary>
+        /// <param name="similarities">A list with similarity scores of all individual chunks of one document with one reference word/phrase.</param>
+        /// <param name="beta">A scaling factor that controls the weighting effect (higher values emphasize larger similarities more).</param>
+        /// <returns>The exponentially weighted mean similarity score.</returns>
+        public static float CalculateExponentiallyWeightedMean(List<float> similarities, float beta)
+        {
+            var expWeights = similarities.Select(x => (float)Math.Exp(beta * x)).ToList();
+            float weightedSum = similarities.Zip(expWeights, (sim, weight) => sim * weight).Sum();
+            float weightSum = expWeights.Sum();
+            float weightedSimilarity = weightSum != 0 ? weightedSum / weightSum : 0;
+            return weightedSimilarity;
+        }
     }
 }

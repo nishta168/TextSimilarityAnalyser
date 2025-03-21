@@ -202,7 +202,8 @@ namespace MySemanticAnalysisSample
             similarityDataTable.Add(similarityDataTableFirstRow.ToArray());
 
             var similarityCalculator = new CosineSimilarityCalculator();
-            const float beta = 50.0f; // Adjust beta to control weighting (higher → stronger bias toward large values)
+
+            const float beta = 30.0f; // Adjusting beta controls weighting for exponential mean calculation  (higher → stronger bias toward large values)
 
             foreach (var query in queryEmbeddingDictionary)
             {
@@ -217,13 +218,8 @@ namespace MySemanticAnalysisSample
                         var sim = similarityCalculator.CalculateSimilarity(embedding, reference.Value);
                         similarities.Add(sim);
                     }
-
-                    //Exponential Weighted Mean Calculation
-                    var expWeights = similarities.Select(x => (float)Math.Exp(beta * x)).ToList(); //address very high values later 
-                    float weightedSum = similarities.Zip(expWeights, (sim, weight) => sim * weight).Sum();
-                    float weightSum = expWeights.Sum();
-                    float weightedSimilarity = weightSum != 0 ? weightedSum / weightSum : 0; // Avoid division by zero
-
+                    //Exponentially Weighted Mean Calculation
+                    var weightedSimilarity = Helper.CalculateExponentiallyWeightedMean(similarities, beta);
 
                     similarityDataTableRow.Add(weightedSimilarity.ToString());
                 }
