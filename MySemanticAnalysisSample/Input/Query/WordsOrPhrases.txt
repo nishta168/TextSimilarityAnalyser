@@ -1,0 +1,6 @@
+query word 1
+query word 2
+phrase 1
+query word 3
+.
+.

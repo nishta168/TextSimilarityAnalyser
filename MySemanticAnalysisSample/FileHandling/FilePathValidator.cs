@@ -84,7 +84,7 @@ namespace MySemanticAnalysisSample.FileHandling
                 // Default: Same folder as the app
                 string outputFolder = AppContext.BaseDirectory;
                 string outputFilePath = Path.Combine(outputFolder, fileName);
-                Console.WriteLine("Output file path not provided for " + fileName + ". Writing to default location.");
+                Console.WriteLine("Valid output file path not provided for " + fileName + ". Writing to default location.");
                 return outputFilePath;
             }
         }

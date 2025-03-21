@@ -14,36 +14,43 @@ namespace MySemanticAnalysisSample
     internal class Program
     {
         static async Task Main(string[] args)
-        {
+        {            
             Console.WriteLine("Welcome to Text Similarity Analyser");
 
-            var config = new ConfigurationBuilder()
+            if (!File.Exists("appsettings.json"))
+            {
+                Console.WriteLine("Error: Configuration file 'appsettings.json' not found. Please ensure it is present in the application directory.");
+                Environment.Exit(1); // Ensure the program terminates with an error code
+            }
+
+            try
+            {
+                var config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables()
                 .AddCommandLine(args)
                 .Build();
 
-            //read and validate user selected mode
-            var mode = config["mode"]?.ToLower();
+                //read and validate user selected mode
+                var mode = config["mode"]?.ToLower();
 
-            var validModes = new HashSet<string>
-            {
-                "comparewordswithwords",
-                "comparedocumentswithwords",
-                "comparedocumentswithdocuments"
-            };
+                var validModes = new HashSet<string>
+                {
+                    "comparewordswithwords",
+                    "comparedocumentswithwords",
+                    "comparedocumentswithdocuments"
+                };
 
-            if (string.IsNullOrEmpty(mode) || !validModes.Contains(mode))
-            {
-                Console.WriteLine("Invalid mode! Please enter a valid mode of comparison.");
-                Console.WriteLine("Usage: MySemanticAnalysisSample.exe --mode <CompareWordsWithWords | CompareDocumentsWithWords | CompareDocumentsWithDocuments>");
-                return;
-            }
+                if (string.IsNullOrEmpty(mode) || !validModes.Contains(mode))
+                {
+                    Console.WriteLine("Invalid mode! Please enter a valid mode of comparison.");
+                    Console.WriteLine("Usage: MySemanticAnalysisSample.exe --mode <CompareWordsWithWords | CompareDocumentsWithWords | CompareDocumentsWithDocuments>");
+                    Environment.Exit(1);
+                }
 
-            var similarityDataTable = new List<string[]>();
+                var similarityDataTable = new List<string[]>();
 
-            try
-            {
+            
                 // Call the appropriate method based on the mode
                 if (mode == "comparewordswithwords")
                 {
@@ -69,7 +76,7 @@ namespace MySemanticAnalysisSample
                 Console.WriteLine($"An error occurred: {ex.GetType().Name} - {ex.Message}");
                 Console.WriteLine("Stack Trace:");
                 Console.WriteLine(ex.StackTrace);
-                Environment.Exit(1); // Ensure the program terminates with an error code
+                Environment.Exit(1);
             }
 
         }
