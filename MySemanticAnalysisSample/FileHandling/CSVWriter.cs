@@ -83,6 +83,7 @@ namespace MySemanticAnalysisSample.FileHandling
                 }
             }
             Console.WriteLine("Embeddings successfully written to " + outputfilePath);
+            Console.WriteLine("");
         }
     }
 }

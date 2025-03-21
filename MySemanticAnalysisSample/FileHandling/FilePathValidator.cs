@@ -12,62 +12,63 @@ namespace MySemanticAnalysisSample.FileHandling
     internal static class FilePathValidator
     {
         /// <summary>
-        /// Validates whether a valid .txt file is given by user when comparing words/phrases
+        /// Returns the user provided input path if its valid, else returns the default suggested location to find inputs (inside app base directory)
         /// </summary>
         /// <param name="filePath">Input file path extracted from config</param>
-        /// <exception cref="ArgumentException">Thrown if the input file path is not provided via config or not a .txt file. </exception>
-        /// <exception cref="FileNotFoundException">Thrown if the provided path doesn't exist.</exception>
-        public static void ValidateTxtFilePath(string filePath)
+        /// <param name="isDocFolder">Set to true if its a path points to documents folder</param>
+        /// <param name="isQuery">Set to true if the path points to query text</param>
+        /// <exception cref="FileNotFoundException">Thrown if the words/phrase .txt file cannot be found.</exception       
+        /// <exception cref="DirectoryNotFoundException">Thrown if the document folder with .txt file documents cannot be found.</exception>
+        /// <returns>Location to read the input files from</returns>
+        public static string ValidateInputPath(string path, bool isDocFolder, bool isQuery)
         {
-            if (string.IsNullOrEmpty(filePath))
+            if (isDocFolder)
             {
-                throw new ArgumentException("Missing required file paths. Please provide file path to the .txt file with words via command-line arguments or appsettings.json." +
-                    "Command-line arguments usage example: MySemanticAnalysisSample.exe --mode CompareWordsWithWords --queryWordsPath \\\"path/to/querywords.txt\\\" --referenceWordsPath \\\"path/to/referencewords.txt\\\"\"");
-            }
+                if (string.IsNullOrEmpty(path) || !Directory.Exists(path) || (Directory.GetFiles(path, "*txt")).Length < 1)
+                {
+                    string defaultFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "InputText", isQuery ? "QueryDocuments" : "ReferenceDocuments");
 
-            if (!File.Exists(filePath))
-            {
-                throw new FileNotFoundException($"Words file not found: {filePath}");
-            }
+                    if (!Directory.Exists(defaultFolderPath))
+                    {
+                        throw new DirectoryNotFoundException($"{(isQuery ? "Query" : "Reference")} Documents path not found: {defaultFolderPath}");
+                    }
 
-            if (Path.GetExtension(filePath).ToLower() != ".txt")
+                    var documentFiles = Directory.GetFiles(defaultFolderPath, "*.txt");
+
+                    if (documentFiles.Length < 1)
+                    {
+                        throw new FileNotFoundException($"No {(isQuery ? "query" : "reference")} .txt document files found in the directory: {defaultFolderPath}");
+                    }
+
+                    Console.WriteLine($"Reading {(isQuery ? "query" : "reference")} documents from {defaultFolderPath}\n");
+                    return defaultFolderPath;
+                }
+
+                Console.WriteLine($"Reading {(isQuery ? "query" : "reference")} documents from {path}\n");
+                return path; // Return the valid directory path
+            }
+            else
             {
-                throw new ArgumentException($"Invalid words file format. Expected .txt, found: {filePath}");
+                if (!string.IsNullOrEmpty(path) || !File.Exists(path) || Path.GetExtension(path).ToLower() != ".txt")
+                {
+                    string defaultFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "InputText", isQuery ? "QueryWordsOrPhrases.txt" : "ReferenceWordsOrPhrases.txt");
+                    if (!File.Exists(defaultFilePath))
+                    {
+                        throw new FileNotFoundException($"{(isQuery ? "Query" : "Reference")} words/phrases .txt file not found at {defaultFilePath}");
+                    }
+                    Console.WriteLine($"Reading {(isQuery ? "query" : "reference")} words/phrases from {defaultFilePath}\n");
+                    return defaultFilePath;
+                }
+
+                Console.WriteLine($"Reading {(isQuery ? "query" : "reference")} words/phrases from {path}\n");
+                return path;
+
             }
 
         }
 
         /// <summary>
-        /// Validates that the user has input a folder containing .txt files when comparing documents.
-        /// </summary>
-        /// <param name="folderPath">Folder path containing documents extracted from config. </param>
-        /// <exception cref="ArgumentException">Thrown if the folder path in not provided via config.</exception>
-        /// <exception cref="DirectoryNotFoundException">Thrown if the path provided doesn't exist.</exception>
-        /// <exception cref="FileNotFoundException">Thrown if there are no .txt documents inside the folder.</exception>
-        public static void ValidateDocumentsFolderPath(string folderPath)
-        {
-            if (string.IsNullOrEmpty(folderPath))
-            {
-                throw new ArgumentException("Missing required file paths. Please provide file path to the folder with documents via command-line arguments or appsettings.json." +
-                    "Command-line arguments usage example: MySemanticAnalysisSample.exe --mode CompareDocumentsWithWords --queryDocumentsPath \\\"path/to/documentsFolder\\\" --referenceWordsPath \\\"path/to/referencewords.txt\\\"\"");
-            }
-
-            if (!Directory.Exists(folderPath))
-            {
-                throw new DirectoryNotFoundException($"Error: The specified path '{folderPath}' does not exist or is not a valid directory.");
-            }
-
-            var documentFiles = Directory.GetFiles(folderPath, "*.txt");
-
-            if (documentFiles.Length < 1)
-            {
-                throw new FileNotFoundException($"No .txt document files found in the directory: {folderPath}");
-            }
-
-        }
-
-        /// <summary>
-        /// Returns the user provided output paths if it is valid. Otherwise returns a default output file path.
+        /// Returns the user provided output paths if it is valid. Otherwise returns a default output file path (inside app base directory).
         /// </summary>
         /// <param name="filePath">File path extracted from config.</param>
         /// <param name="fileName">The default file name if no valid path is provided.</param>
@@ -84,7 +85,6 @@ namespace MySemanticAnalysisSample.FileHandling
                 // Default: Same folder as the app
                 string outputFolder = AppContext.BaseDirectory;
                 string outputFilePath = Path.Combine(outputFolder, fileName);
-                Console.WriteLine("Valid output file path not provided for " + fileName + ". Writing to default location.");
                 return outputFilePath;
             }
         }

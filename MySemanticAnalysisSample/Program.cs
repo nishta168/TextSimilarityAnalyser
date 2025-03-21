@@ -15,7 +15,7 @@ namespace MySemanticAnalysisSample
     {
         static async Task Main(string[] args)
         {            
-            Console.WriteLine("Welcome to Text Similarity Analyser");
+            Console.WriteLine("Welcome to Text Similarity Analyser\n");
 
             if (!File.Exists("appsettings.json"))
             {
@@ -89,13 +89,13 @@ namespace MySemanticAnalysisSample
         /// <exception cref="InvalidOperationException"></exception>
         static async Task<List<string[]>> CompareWordsWithWordsAsync(IConfiguration config)
         {
-            Console.WriteLine("Selected mode: Compare Words/Phrases with Words/Phrases");
+            Console.WriteLine("Selected mode: Compare Words/Phrases with Words/Phrases\n");
 
             // Read and validate input file paths
             string queryWordsPath = config["Input:queryWordsPath"];
             string referenceWordsPath = config["Input:referenceWordsPath"];
-            FilePathValidator.ValidateTxtFilePath(queryWordsPath);
-            FilePathValidator.ValidateTxtFilePath(referenceWordsPath);
+            queryWordsPath = FilePathValidator.ValidateInputPath(queryWordsPath, false, true);
+            referenceWordsPath = FilePathValidator.ValidateInputPath(referenceWordsPath, false, false);
 
             // Read words/phrases from files
             var queryWordsReader = new FileReader(queryWordsPath);
@@ -165,13 +165,13 @@ namespace MySemanticAnalysisSample
         /// <returns>A list of string arrays representing the similarity table, where the first row contains reference words/phrases, the first column contains query documents, and the remaining cells contain their similarity scores.</returns>
         static async Task<List<string[]>> CompareDocsWithWordsAsync(IConfiguration config)
         {
-            Console.WriteLine("Selected mode: Compare Documents with Words/Phrases");
+            Console.WriteLine("Selected mode: Compare Documents with Words/Phrases\n");
 
             // Read and validate input file paths
             string queryDocumentsPath = config["Input:queryDocumentsPath"];
             string referenceWordsPath = config["Input:referenceWordsPath"];
-            FilePathValidator.ValidateDocumentsFolderPath(queryDocumentsPath);
-            FilePathValidator.ValidateTxtFilePath(referenceWordsPath);
+            queryDocumentsPath = FilePathValidator.ValidateInputPath(queryDocumentsPath, true, true);
+            referenceWordsPath = FilePathValidator.ValidateInputPath(referenceWordsPath, false, false);
 
             // Read reference words/phrases and query documents 
             var queryDocsReader = new FileReader(queryDocumentsPath);
@@ -249,13 +249,13 @@ namespace MySemanticAnalysisSample
         /// <returns>A list of string arrays representing the similarity table, where the first row contains reference documents, the first column contains query documents, and the remaining cells contain their similarity scores.</returns>
         static async Task<List<string[]>> CompareDocsWithDocsAsync(IConfiguration config)
         {
-            Console.WriteLine("Selected mode: Compare Documents with Documents");
+            Console.WriteLine("Selected mode: Compare Documents with Documents\n");
 
             // Read and validate input file paths
             string queryDocumentsPath = config["Input:queryDocumentsPath"];
             string referenceDocumentsPath = config["Input:referenceDocumentsPath"];
-            FilePathValidator.ValidateDocumentsFolderPath(queryDocumentsPath);
-            FilePathValidator.ValidateDocumentsFolderPath(referenceDocumentsPath);
+            queryDocumentsPath = FilePathValidator.ValidateInputPath(queryDocumentsPath, true, true);
+            referenceDocumentsPath = FilePathValidator.ValidateInputPath(referenceDocumentsPath, true, false);
 
             // Read documents from folders
             var queryDocsReader = new FileReader(queryDocumentsPath);
