@@ -30,14 +30,14 @@ namespace MySemanticAnalysisSample.FileHandling
 
                     if (!Directory.Exists(defaultFolderPath))
                     {
-                        throw new DirectoryNotFoundException($"{(isQuery ? "Query" : "Reference")} Documents path not found: {defaultFolderPath}");
+                        throw new DirectoryNotFoundException($"{(isQuery ? "Query" : "Reference")} Documents not found in the provided path: {path} and default path: {defaultFolderPath}");
                     }
 
                     var documentFiles = Directory.GetFiles(defaultFolderPath, "*.txt");
 
                     if (documentFiles.Length < 1)
                     {
-                        throw new FileNotFoundException($"No {(isQuery ? "query" : "reference")} .txt document files found in the directory: {defaultFolderPath}");
+                        throw new FileNotFoundException($"No {(isQuery ? "query" : "reference")} .txt document files found in the provided path: {path} and default path: {defaultFolderPath}");
                     }
 
                     Console.WriteLine($"Reading {(isQuery ? "query" : "reference")} documents from {defaultFolderPath}\n");
@@ -49,12 +49,12 @@ namespace MySemanticAnalysisSample.FileHandling
             }
             else
             {
-                if (!string.IsNullOrEmpty(path) || !File.Exists(path) || Path.GetExtension(path).ToLower() != ".txt")
+                if (string.IsNullOrEmpty(path) || !File.Exists(path) || Path.GetExtension(path).ToLower() != ".txt")
                 {
                     string defaultFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "InputText", isQuery ? "QueryWordsOrPhrases.txt" : "ReferenceWordsOrPhrases.txt");
                     if (!File.Exists(defaultFilePath))
                     {
-                        throw new FileNotFoundException($"{(isQuery ? "Query" : "Reference")} words/phrases .txt file not found at {defaultFilePath}");
+                        throw new FileNotFoundException($"{(isQuery ? "Query" : "Reference")} words/phrases .txt file not found at provided path: {path} and default path: {defaultFilePath}");
                     }
                     Console.WriteLine($"Reading {(isQuery ? "query" : "reference")} words/phrases from {defaultFilePath}\n");
                     return defaultFilePath;
