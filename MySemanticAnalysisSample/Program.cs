@@ -65,7 +65,7 @@ namespace MySemanticAnalysisSample
                     similarityDataTable = await CompareDocsWithDocsAsync(config);
                 }
 
-                string outputCSVPath = config["Output:similarityCSVPath"];
+                string outputCSVPath = config["Output:similarityCSVPath"] ?? "";
                 outputCSVPath = FilePathValidator.ValidateOutputFilePath(outputCSVPath, "similarity_result.csv");
                 CSVWriter.WriteSimilarityToCSV(outputCSVPath, similarityDataTable);
                 Console.WriteLine($"Similarity data successfully written to: {outputCSVPath}");
@@ -92,8 +92,8 @@ namespace MySemanticAnalysisSample
             Console.WriteLine("Selected mode: Compare Words/Phrases with Words/Phrases\n");
 
             // Read and validate input file paths
-            string queryWordsPath = config["Input:queryWordsPath"];
-            string referenceWordsPath = config["Input:referenceWordsPath"];
+            string queryWordsPath = config["Input:queryWordsPath"] ?? "";
+            string referenceWordsPath = config["Input:referenceWordsPath"] ?? "";
             queryWordsPath = FilePathValidator.ValidateInputPath(queryWordsPath, false, true);
             referenceWordsPath = FilePathValidator.ValidateInputPath(referenceWordsPath, false, false);
 
@@ -114,10 +114,10 @@ namespace MySemanticAnalysisSample
             var referenceEmbeddingDictionary = await embeddingGenerator.EmbedWordsListAsync(processedReferenceWords);
 
             //write embeddings to csv files for scalar value visualisation
-            var outputQueryEmbeddingCSVPath = config["Output:queryEmbeddingCSVPath"];
+            var outputQueryEmbeddingCSVPath = config["Output:queryEmbeddingCSVPath"] ?? "";
             outputQueryEmbeddingCSVPath = FilePathValidator.ValidateOutputFilePath(outputQueryEmbeddingCSVPath, "query_embeddings.csv");
             CSVWriter.WriteEmbeddingsToCSV(outputQueryEmbeddingCSVPath, queryEmbeddingDictionary);
-            var outputReferenceEmbeddingsCSVPath = config["Output:referenceEmbeddingCSVPath"];
+            var outputReferenceEmbeddingsCSVPath = config["Output:referenceEmbeddingCSVPath"] ?? "";
             outputReferenceEmbeddingsCSVPath = FilePathValidator.ValidateOutputFilePath(outputReferenceEmbeddingsCSVPath, "reference_embeddings.csv");
             CSVWriter.WriteEmbeddingsToCSV(outputReferenceEmbeddingsCSVPath, referenceEmbeddingDictionary);
 
@@ -168,8 +168,8 @@ namespace MySemanticAnalysisSample
             Console.WriteLine("Selected mode: Compare Documents with Words/Phrases\n");
 
             // Read and validate input file paths
-            string queryDocumentsPath = config["Input:queryDocumentsPath"];
-            string referenceWordsPath = config["Input:referenceWordsPath"];
+            string queryDocumentsPath = config["Input:queryDocumentsPath"] ?? "";
+            string referenceWordsPath = config["Input:referenceWordsPath"] ?? "";
             queryDocumentsPath = FilePathValidator.ValidateInputPath(queryDocumentsPath, true, true);
             referenceWordsPath = FilePathValidator.ValidateInputPath(referenceWordsPath, false, false);
 
@@ -190,10 +190,10 @@ namespace MySemanticAnalysisSample
             var referenceEmbeddingDictionary = await embeddingGenerator.EmbedWordsListAsync(processedReferenceWords);
 
             //write embeddings to csv files for scalar value visualisation
-            var outputQueryEmbeddingCSVPath = config["Output:queryEmbeddingCSVPath"];
+            var outputQueryEmbeddingCSVPath = config["Output:queryEmbeddingCSVPath"] ?? "";
             outputQueryEmbeddingCSVPath = FilePathValidator.ValidateOutputFilePath(outputQueryEmbeddingCSVPath, "query_embeddings.csv");
             CSVWriter.WriteEmbeddingsToCSV(outputQueryEmbeddingCSVPath, queryEmbeddingDictionary);
-            var outputReferenceEmbeddingsCSVPath = config["Output:referenceEmbeddingCSVPath"];
+            var outputReferenceEmbeddingsCSVPath = config["Output:referenceEmbeddingCSVPath"] ?? "";
             outputReferenceEmbeddingsCSVPath = FilePathValidator.ValidateOutputFilePath(outputReferenceEmbeddingsCSVPath, "reference_embeddings.csv");
             CSVWriter.WriteEmbeddingsToCSV(outputReferenceEmbeddingsCSVPath, referenceEmbeddingDictionary);
 
@@ -252,8 +252,8 @@ namespace MySemanticAnalysisSample
             Console.WriteLine("Selected mode: Compare Documents with Documents\n");
 
             // Read and validate input file paths
-            string queryDocumentsPath = config["Input:queryDocumentsPath"];
-            string referenceDocumentsPath = config["Input:referenceDocumentsPath"];
+            string queryDocumentsPath = config["Input:queryDocumentsPath"] ?? "";
+            string referenceDocumentsPath = config["Input:referenceDocumentsPath"] ?? "";
             queryDocumentsPath = FilePathValidator.ValidateInputPath(queryDocumentsPath, true, true);
             referenceDocumentsPath = FilePathValidator.ValidateInputPath(referenceDocumentsPath, true, false);
 
@@ -278,10 +278,10 @@ namespace MySemanticAnalysisSample
             var refDictionary = Helper.CalculateMeanEmbedding(referenceEmbeddingDictionary);
 
             // Write embeddings to csv file to visualise scalar values 
-            var outputQueryEmbeddingCSVPath = config["Output:queryEmbeddingCSVPath"];
+            var outputQueryEmbeddingCSVPath = config["Output:queryEmbeddingCSVPath"] ?? "";
             outputQueryEmbeddingCSVPath = FilePathValidator.ValidateOutputFilePath(outputQueryEmbeddingCSVPath, "query_embeddings.csv");
             CSVWriter.WriteEmbeddingsToCSV(outputQueryEmbeddingCSVPath, queryDictionary);
-            var outputReferenceEmbeddingsCSVPath = config["Output:referenceEmbeddingCSVPath"];
+            var outputReferenceEmbeddingsCSVPath = config["Output:referenceEmbeddingCSVPath"] ?? "";
             outputReferenceEmbeddingsCSVPath = FilePathValidator.ValidateOutputFilePath(outputReferenceEmbeddingsCSVPath, "reference_embeddings.csv");
             CSVWriter.WriteEmbeddingsToCSV(outputReferenceEmbeddingsCSVPath, refDictionary);
 

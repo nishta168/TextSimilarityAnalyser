@@ -18,13 +18,13 @@ namespace MySemanticAnalysisSample.FileHandling
         /// <param name="isDocFolder">Set to true if its a path points to documents folder</param>
         /// <param name="isQuery">Set to true if the path points to query text</param>
         /// <exception cref="FileNotFoundException">Thrown if the words/phrase .txt file cannot be found.</exception       
-        /// <exception cref="DirectoryNotFoundException">Thrown if the document folder with .txt file documents cannot be found.</exception>
+        /// <exception cref="DirectoryNotFoundException">Thrown if the document folder with .txt or pdf documents cannot be found.</exception>
         /// <returns>Location to read the input files from</returns>
         public static string ValidateInputPath(string path, bool isDocFolder, bool isQuery)
         {
             if (isDocFolder)
             {
-                if (string.IsNullOrEmpty(path) || !Directory.Exists(path) || (Directory.GetFiles(path, "*txt")).Length < 1)
+                if (string.IsNullOrEmpty(path) || !Directory.Exists(path) || (Directory.GetFiles(path, "*.txt").Length + Directory.GetFiles(path, "*.pdf").Length) < 1)
                 {
                     string defaultFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "InputText", isQuery ? "QueryDocuments" : "ReferenceDocuments");
 
@@ -33,11 +33,9 @@ namespace MySemanticAnalysisSample.FileHandling
                         throw new DirectoryNotFoundException($"{(isQuery ? "Query" : "Reference")} Documents not found in the provided path: {path} and default path: {defaultFolderPath}");
                     }
 
-                    var documentFiles = Directory.GetFiles(defaultFolderPath, "*.txt");
-
-                    if (documentFiles.Length < 1)
+                    if ((Directory.GetFiles(defaultFolderPath, "*.txt").Length + Directory.GetFiles(defaultFolderPath, "*.pdf").Length) < 1)
                     {
-                        throw new FileNotFoundException($"No {(isQuery ? "query" : "reference")} .txt document files found in the provided path: {path} and default path: {defaultFolderPath}");
+                        throw new FileNotFoundException($"No {(isQuery ? "query" : "reference")} .txt or pdf document files found in the provided path: {path} and default path: {defaultFolderPath}");
                     }
 
                     Console.WriteLine($"Reading {(isQuery ? "query" : "reference")} documents from {defaultFolderPath}\n");

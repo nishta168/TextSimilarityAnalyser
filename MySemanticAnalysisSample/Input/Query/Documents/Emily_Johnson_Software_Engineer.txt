@@ -1,0 +1,21 @@
+Emily Johnson
+Software Engineer
+
+Summary:
+Innovative software engineer with expertise in backend development and distributed systems. Strong problem-solving skills.
+
+Skills:
+- Java, Spring Boot, Microservices
+- AWS, Kubernetes, CI/CD
+
+Experience:
+Software Engineer at CloudTech (2019 - Present)
+- Designed a scalable microservices architecture that handled 1M+ requests/day
+- Automated CI/CD pipelines reducing deployment time by 40%
+
+Projects:
+- URL shortener service (github.com/emilyjohnson/url-shortener)
+- Task automation bot (github.com/emilyjohnson/task-bot)
+
+Education:
+B.S. in Computer Science, MIT

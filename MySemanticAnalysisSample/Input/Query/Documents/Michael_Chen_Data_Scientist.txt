@@ -1,0 +1,22 @@
+Michael Chen
+Data Scientist
+
+Summary:
+Data-driven professional with experience in predictive analytics and data visualization.
+
+Skills:
+- Python, R, SQL
+- Machine Learning, Big Data Analytics
+- Tableau, Power BI
+
+Experience:
+Data Scientist at FinTech Corp (2020 - Present)
+- Built a fraud detection model that reduced fraudulent transactions by 45%
+- Developed a recommendation engine increasing customer engagement by 20%
+
+Projects:
+- Predictive analytics for stock market trends (github.com/michaelchen/stock-analytics)
+- Customer segmentation analysis (github.com/michaelchen/customer-segmentation)
+
+Education:
+M.S. in Data Science, Carnegie Mellon University

@@ -1,0 +1,22 @@
+Sophia Kim
+Web Developer
+
+Summary:
+Full-stack web developer with 4+ years of experience building scalable web applications. Passionate about user-friendly designs and performance optimization.
+
+Skills:
+- JavaScript, React, Node.js, Express, MongoDB
+- RESTful APIs, GraphQL
+- AWS, Docker, CI/CD
+
+Experience:
+Web Developer at Tech Solutions (2019 - Present)
+- Built a real-time chat application used by 50,000+ users
+- Improved website performance, reducing load time by 35%
+
+Projects:
+- E-commerce website using MERN stack (github.com/sophiakim/mern-store)
+- Portfolio website with Gatsby.js (github.com/sophiakim/portfolio)
+
+Education:
+B.S. in Computer Science, UC Berkeley

@@ -1,5 +1,3 @@
-reference word 1
-reference phrase 1
-reference word 2
-.
-.
+Machine Learning
+Project Management
+Computer Vision
