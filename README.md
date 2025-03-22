@@ -11,7 +11,7 @@ The solution consists of two main components:
 - **Processing**:
   - Reads input files
   - Calculates similarity scores using OpenAI embedding model
-  - Saves results in an output directory
+- **Output**: Saves similarity scores and embedding vectors in an output directory
  
 
 ### 2. **Python Dash Visualization**
@@ -44,12 +44,11 @@ The solution consists of two main components:
 ### 1. Clone the Repository  
 ```sh
 git clone https://github.com/nishta168/TextSimilarityAnalyser.git
-cd TextSimilarityAnalyser
 ```
 
 ### 2. Configuration and setting up inputs
-Create appsettings.json file and copy contents from appsettings.example.json.
-Enter the OpenAI api key, input paths and mode of operation. (Input paths and mode can also be provided later while running, as command line args. It is suggested to provide input path locations in appsettings.json and mode via command line args for ease of usage).
+Open the .sln file. Create appsettings.json file and copy contents from appsettings.example.json.
+Enter the OpenAI api key, input paths and mode of operation. (Input paths and mode can also be provided later while running, as command line args. It is suggested to provide input path locations via appsettings.json and mode via command line args for ease of usage).
 Input the query and reference texts in the provided paths.
 
 ###  3. Run the Application  
@@ -75,11 +74,14 @@ dotnet run --mode CompareDocumentsWitDocuments --queryDocumentsPath "path/to/que
 Output CSVs will be written to the output debug folder.
 
 ### 4. Run the Python Dash Visualization
+Ensure Python (3.x) with pip is installed before running
+
 ```sh
 cd .\bin\Debug\net9.0\  # Navigate to the output folder
 pip install dash plotly pandas numpy #Install dependencies
 python app.py  # Run the visualization app
 ```
+Click on the link to view the dashboard with results
 ---
 ## **Option 2: Run from Pre-built Executable (No .NET SDK Required)**  
 1. **Download the latest release** from the [GitHub Releases](https://github.com/<your_repo>/releases) page.  
@@ -88,17 +90,20 @@ python app.py  # Run the visualization app
 4. Add OpenAI api key in appsettings.json
 5. Provide mode either in appsettings.json or as command line args
 6. Enter inputs in the InputText folder. (provide input file path via appsettings.json or command line args if files from some other location is to compared)
-7. If mode not provided and custom input paths are used, run:   
+7. If mode not provided and custom input paths are used, run:
+   
      ```powershell
      .\MySemanticAnalysisSample --mode CompareWordsWithWords --queryWordsPath "path/to/querywords.txt" --referenceWordsPath "path/to/referencewords.txt"
      ```
    If input text is present in InputText folder, run:
+   
      ```powershell
      .\MySemanticAnalysisSample --mode CompareWordsWithWords # if mode not provided in appsettings.json
      .\MySemanticAnalysisSample # if mode provided in appsettings.json
      ```
-8. Output CSVs will be written to the same folder.
-9. Run the Python Dash Visualization
+9. Output CSVs will be written to the same folder.
+10. Run the Python Dash Visualization
+    
       ```sh
       pip install dash plotly pandas numpy #Install dependencies
       python app.py  # Run the visualization app
