@@ -20,14 +20,21 @@ The solution consists of two main components:
 - **Output**: Interactive graphs for result interpretation.
 
 ## Overview of the C# application
+
+![Flowchart (1)](https://github.com/user-attachments/assets/e6649391-f092-4e0a-9b36-b0c14dbae95b)
+
+System Architecture Flowchart depicting the overall workflow of the proposed application
+
 - The application compares one or many query texts with one or many reference text and outputs the result as a csv in the following format.
   
-![Screenshot 2025-03-22 122534](https://github.com/user-attachments/assets/f954f786-1a1d-47e1-a801-3f5bd516884e)  
+  ![image](https://github.com/user-attachments/assets/6ce1fd39-0c9d-47a4-afb5-52d7c4ba4474)
+  Sample output
+  
 - There are three modes of operation:
     - **Compare Words/Phrases with Words/Phrases:** 
-      Both query and references are words or phrases. Expected input is two .txt files with queries and references words/phrases
+      Both query and references are words or phrases. Expected input is two .txt files with queries and references words/phrases. Each word/phrase should be given as a new line
     - **Compare Documents with Words/Phrases:**
-      Query documents are compared with reference words/phrases to find most relevant documents. Expected input is a folder with document .txt files and a .txt file with all reference words/phrases
+      Query documents are compared with reference words/phrases to find most relevant documents. Expected input is a folder with document .txt or pdf files and a .txt file with all reference words/phrases. Name         of the txt file would be used as the label for fhe document
     - **Compare Documents with Documents:**
       Query documents are compared with reference documents to find their contexual alignment. Expected input is two folders with query and reference documents
 
@@ -51,6 +58,11 @@ Open the .sln file. Create appsettings.json file and copy contents from appsetti
 Enter the OpenAI api key, input paths and mode of operation. (Input paths and mode can also be provided later while running, as command line args. It is suggested to provide input path locations via appsettings.json and mode via command line args for ease of usage).
 Input the query and reference texts in the provided paths.
 
+Note:
+- If it is displayed that input is being read from the debug folder ensure that the configured input path is valid and it has correct input in the expected format
+- Sample inputs are provided for --mode CompareDocumentsWithWords in the Input folder. Run on this mode after configuring paths to test the app easily without setting up inputs.
+- --mode arguments are case insensitive
+  
 ###  3. Run the Application  
 
 ```sh
@@ -71,6 +83,8 @@ To compare documents with documents:
 ```sh
 dotnet run --mode CompareDocumentsWitDocuments --queryDocumentsPath "path/to/querydocs/" --referenceDocumentsPath "path/to/refdocs"
 ```
+
+
 Output CSVs will be written to the output debug folder.
 
 ### 4. Run the Python Dash Visualization
@@ -83,37 +97,7 @@ python app.py  # Run the visualization app
 ```
 Click on the link to view the dashboard with results
 ---
-## **Option 2: Run from Pre-built Executable (No .NET SDK Required)**  
-1. **Download the latest release** from the [GitHub Releases](https://github.com/<your_repo>/releases) page.  
-2. Extract the contents of the zip file.  
-3. Open a terminal or command prompt, navigate to the extracted folder.
-4. Add OpenAI api key in appsettings.json
-5. Provide mode either in appsettings.json or as command line args
-6. Enter inputs in the InputText folder. (provide input file path via appsettings.json or command line args if files from some other location is to compared)
-7. If mode not provided and custom input paths are used, run:
-   
-     ```powershell
-     .\MySemanticAnalysisSample --mode CompareWordsWithWords --queryWordsPath "path/to/querywords.txt" --referenceWordsPath "path/to/referencewords.txt"
-     ```
-   If input text is present in InputText folder, run:
-   
-     ```powershell
-     .\MySemanticAnalysisSample --mode CompareWordsWithWords # if mode not provided in appsettings.json
-     .\MySemanticAnalysisSample # if mode provided in appsettings.json
-     ```
-9. Output CSVs will be written to the same folder.
-10. Run the Python Dash Visualization
-    
-      ```sh
-      pip install dash plotly pandas numpy #Install dependencies
-      python app.py  # Run the visualization app
-      ```
-
-
-## Notes  
-- If input files are provided through the folder **InputText**, not required to configure input paths.  
-- Make sure all Python and dependencies are installed before running the python visualization app.  
-
----
+![1d](https://github.com/user-attachments/assets/66687aa6-35bb-42b5-9d90-2fcaed0a77e5)
+Visualization output sample for words with words comparison
 
 
