@@ -23,12 +23,12 @@ The solution consists of two main components:
 
 ![Flowchart (1)](https://github.com/user-attachments/assets/e6649391-f092-4e0a-9b36-b0c14dbae95b)
 
-System Architecture Flowchart depicting the overall workflow of the proposed application
+*Fig 1. System Architecture Flowchart depicting the overall workflow of the proposed application*
 
-- The application compares one or many query texts with one or many reference text and outputs the result as a csv in the following format.
+The application compares one or many query texts with one or many reference text and outputs the result as a csv in the following format.
   
-  ![image](https://github.com/user-attachments/assets/6ce1fd39-0c9d-47a4-afb5-52d7c4ba4474)
-  Sample output
+![image](https://github.com/user-attachments/assets/6ce1fd39-0c9d-47a4-afb5-52d7c4ba4474)
+*Fig 2. Sample output*
   
 - There are three modes of operation:
     - **Compare Words/Phrases with Words/Phrases:** 
@@ -97,11 +97,25 @@ python app.py  # Run the visualization app
 ```
 Click on the link generated to view the dashboard with results
 
-![1d](https://github.com/user-attachments/assets/66687aa6-35bb-42b5-9d90-2fcaed0a77e5)
-Visualization output sample for words with words comparison
+## Results
+### Mode 1: Compare words/phrases with words/phrases
+![Screenshot 2025-03-31 010126](https://github.com/user-attachments/assets/5e94b28b-d26c-4553-b9f0-72d014755c68)
+*Fig 3. Visualization output sample for words with words comparison for one reference*
+
+![2d](https://github.com/user-attachments/assets/7e48dcfd-5123-43c7-9f04-065125e5f062)
+*Fig 4. Visualization output sample for words with words comparison for two references*
+
+### Mode 2: Compare documents with words/phrases
+![Screenshot 2025-03-31 172859](https://github.com/user-attachments/assets/a25fe738-f964-4e04-9a85-810ae5b7cd1f)
+*Fig 5. Visualization output sample for documents (resume) with words (job role) comparison for one reference*
+
+### Mode 3: Compare documents with documents
+![Screenshot 2025-03-31 173830](https://github.com/user-attachments/assets/dc1f8cc8-f34a-411d-9be9-5db2429f9bb3)
+*Fig 5. Visualization output sample for documents (resume) with documents (resume) comparison for one reference*
+
 
 ![newplot (4)](https://github.com/user-attachments/assets/e5133d75-4306-44f8-a120-d4ac44bd4c93)
-Visualization output sample for scalar values of vectors
+*Fig 4. Visualization output sample for scalar values of vectors*
 
 
 
