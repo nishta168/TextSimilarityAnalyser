@@ -42,8 +42,9 @@ namespace MySemanticAnalysisSample.SimilarityCalculation
 
             if (magnitudeProduct == 0)
                 throw new InvalidOperationException("Cannot calculate similarity for zero-length vectors.");
+            var cosineSimilarity = (float)(dotProduct / magnitudeProduct);
 
-            return (float)(dotProduct / magnitudeProduct);
+            return (float)Math.Round(cosineSimilarity, 3);
         }
     }
 }
