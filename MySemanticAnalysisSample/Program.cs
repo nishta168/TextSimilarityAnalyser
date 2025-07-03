@@ -133,9 +133,7 @@ namespace MySemanticAnalysisSample
             similarityDataTable.Add(similarityDataTableFirstRow.ToArray());
 
             var similarityCalculator = new CosineSimilarityCalculator();
-            //var similarityCalculator = new EuclideanDistanceCalculator();
-            //var similarityCalculator = new DotProductSimilarityCalculator();
-            //var similarityCalculator = new JaccardSimilarityCalculator();
+           
 
             foreach (var query in queryEmbeddingDictionary)
             {
@@ -189,7 +187,7 @@ namespace MySemanticAnalysisSample
             var queryEmbeddingDictionary = await embeddingGenerator.EmbedDocumentsListAsync(processedQueryDocs);
             var referenceEmbeddingDictionary = await embeddingGenerator.EmbedWordsListAsync(processedReferenceWords);
 
-            //write embeddings to csv files for scalar value visualisation
+            //write embeddins to csv files for scalar value visualisation
             var outputQueryEmbeddingCSVPath = config["Output:queryEmbeddingCSVPath"] ?? "";
             outputQueryEmbeddingCSVPath = FilePathValidator.ValidateOutputFilePath(outputQueryEmbeddingCSVPath, "query_embeddings.csv");
             CSVWriter.WriteEmbeddingsToCSV(outputQueryEmbeddingCSVPath, queryEmbeddingDictionary);
